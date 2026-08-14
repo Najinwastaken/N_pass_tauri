@@ -1,51 +1,65 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import { invoke } from "@tauri-apps/api/core";
+import { useEffect, useState } from "react";
+import { api } from "./api";
+import { ProfileSelect } from "./screens/ProfileSelect";
+import { CreateProfile } from "./screens/CreateProfile";
+import { Unlock } from "./screens/Unlock";
+import { Main } from "./screens/Main";
 import "./App.css";
 
-function App() {
-  const [greetMsg, setGreetMsg] = useState("");
-  const [name, setName] = useState("");
+type Screen =
+  | { kind: "loading" }
+  | { kind: "profiles" }
+  | { kind: "create" }
+  | { kind: "unlock"; profile: string }
+  | { kind: "main"; profile: string };
 
-  async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    setGreetMsg(await invoke("greet", { name }));
+export default function App() {
+  const [screen, setScreen] = useState<Screen>({ kind: "loading" });
+  const [profiles, setProfiles] = useState<string[]>([]);
+
+  async function goToStart() {
+    const list = await api.listProfiles();
+    setProfiles(list);
+    setScreen(list.length === 0 ? { kind: "create" } : { kind: "profiles" });
   }
 
-  return (
-    <main className="container">
-      <h1>Welcome to Tauri + React</h1>
+  useEffect(() => {
+    void (async () => {
+      // Backend still unlocked (e.g. frontend hot-reload) → straight to main.
+      const current = await api.currentProfile();
+      if (current) setScreen({ kind: "main", profile: current });
+      else await goToStart();
+    })();
+  }, []);
 
-      <div className="row">
-        <a href="https://vite.dev" target="_blank">
-          <img src="/vite.svg" className="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://tauri.app" target="_blank">
-          <img src="/tauri.svg" className="logo tauri" alt="Tauri logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <p>Click on the Tauri, Vite, and React logos to learn more.</p>
-
-      <form
-        className="row"
-        onSubmit={(e) => {
-          e.preventDefault();
-          greet();
-        }}
-      >
-        <input
-          id="greet-input"
-          onChange={(e) => setName(e.currentTarget.value)}
-          placeholder="Enter a name..."
+  switch (screen.kind) {
+    case "loading":
+      return null;
+    case "profiles":
+      return (
+        <ProfileSelect
+          profiles={profiles}
+          onOpen={(profile) => setScreen({ kind: "unlock", profile })}
+          onCreate={() => setScreen({ kind: "create" })}
+          onChanged={() => void goToStart()}
         />
-        <button type="submit">Greet</button>
-      </form>
-      <p>{greetMsg}</p>
-    </main>
-  );
+      );
+    case "create":
+      return (
+        <CreateProfile
+          onCreated={(profile) => setScreen({ kind: "main", profile })}
+          onBack={() => void goToStart()}
+        />
+      );
+    case "unlock":
+      return (
+        <Unlock
+          profile={screen.profile}
+          onUnlocked={() => setScreen({ kind: "main", profile: screen.profile })}
+          onBack={() => void goToStart()}
+        />
+      );
+    case "main":
+      return <Main profile={screen.profile} onLocked={() => void goToStart()} />;
+  }
 }
-
-export default App;

@@ -151,6 +151,12 @@ pub fn save(
     atomic_write_with_backup(path, &file_bytes)
 }
 
+/// Read and parse only the header of a vault file (no password needed).
+pub fn load_header(path: &Path) -> Result<VaultHeader, VaultError> {
+    let bytes = fs::read(path)?;
+    VaultHeader::from_bytes(&bytes)
+}
+
 /// Load a vault: parse header, re-derive the key with the stored KDF params
 /// and salt, decrypt, deserialize. Returns the data and the key.
 pub fn load(

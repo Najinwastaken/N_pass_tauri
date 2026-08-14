@@ -5,10 +5,15 @@
 
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
+use zeroize::Zeroize;
 
 /// A single login/password record.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+///
+/// `Zeroize` lets us wipe entry contents from memory on lock. `Uuid` has no
+/// Zeroize impl (and is not secret), so it is skipped.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Zeroize)]
 pub struct PasswordEntry {
+    #[zeroize(skip)]
     pub id: Uuid,
     pub title: String,
     pub username: String,
@@ -18,8 +23,9 @@ pub struct PasswordEntry {
 }
 
 /// A bank card record.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Zeroize)]
 pub struct CardEntry {
+    #[zeroize(skip)]
     pub id: Uuid,
     pub title: String,
     pub cardholder: String,
@@ -32,16 +38,18 @@ pub struct CardEntry {
 }
 
 /// A free-form secure note.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Zeroize)]
 pub struct NoteEntry {
+    #[zeroize(skip)]
     pub id: Uuid,
     pub title: String,
     pub body: String,
 }
 
 /// A key/token record (API keys, SSH passphrases, license keys...).
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Zeroize)]
 pub struct KeyEntry {
+    #[zeroize(skip)]
     pub id: Uuid,
     pub title: String,
     pub key: String,
@@ -49,7 +57,7 @@ pub struct KeyEntry {
 }
 
 /// Per-vault user settings, stored encrypted along with the entries.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Zeroize)]
 pub struct Settings {
     /// Auto-lock after this many minutes of inactivity.
     #[serde(default = "default_auto_lock_minutes")]
@@ -86,7 +94,7 @@ impl Default for Settings {
 /// version (missing a newer field) still deserializes — forward compatibility
 /// for the JSON payload, mirroring what `format_version` does for the binary
 /// header.
-#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Zeroize)]
 pub struct VaultData {
     #[serde(default)]
     pub passwords: Vec<PasswordEntry>,
