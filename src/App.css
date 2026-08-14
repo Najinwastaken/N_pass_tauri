@@ -8,7 +8,7 @@
   /* surfaces */
   --bg-base: #0a0e19;
   --bg-glow-1: rgba(79, 108, 255, 0.13);
-  --bg-glow-2: rgba(124, 92, 255, 0.1);
+  --bg-glow-2: rgba(56, 140, 255, 0.1);
   --panel: rgba(255, 255, 255, 0.04);
   --panel-strong: rgba(20, 27, 48, 0.66);
   --input-bg: rgba(255, 255, 255, 0.05);
@@ -24,7 +24,7 @@
 
   /* accent */
   --accent: #5b7fff;
-  --accent-2: #7c5cff;
+  --accent-2: #3b5eff;
   --accent-soft: rgba(91, 127, 255, 0.16);
   --accent-text: #9db4ff;
   --on-accent: #ffffff;
@@ -49,7 +49,7 @@
 :root[data-theme="light"] {
   --bg-base: #eef1f8;
   --bg-glow-1: rgba(79, 108, 255, 0.12);
-  --bg-glow-2: rgba(124, 92, 255, 0.09);
+  --bg-glow-2: rgba(56, 120, 240, 0.09);
   --panel: rgba(255, 255, 255, 0.6);
   --panel-strong: rgba(255, 255, 255, 0.78);
   --input-bg: rgba(13, 24, 56, 0.045);
@@ -63,7 +63,7 @@
   --text-faint: #98a1b5;
 
   --accent: #3d63e8;
-  --accent-2: #6d4de0;
+  --accent-2: #2b50d9;
   --accent-soft: rgba(61, 99, 232, 0.12);
   --accent-text: #3d63e8;
   --on-accent: #ffffff;
@@ -780,10 +780,11 @@ input.invalid {
   filter: none;
 }
 
+/* Same selection language as the active nav item: soft accent tint —
+   clearly visible on both themes without shouting. */
 .theme-switch button.active {
-  background: var(--panel-strong);
-  color: var(--text);
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.25);
+  background: var(--accent-soft);
+  color: var(--accent-text);
 }
 
 /* ---------- content / views ---------- */
