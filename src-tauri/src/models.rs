@@ -28,6 +28,10 @@ pub struct CardEntry {
     #[zeroize(skip)]
     pub id: Uuid,
     pub title: String,
+    /// Payment network ("Visa", "Mastercard", ...). `default` keeps vaults
+    /// saved before this field existed loadable.
+    #[serde(default)]
+    pub provider: String,
     pub cardholder: String,
     /// Stored without separators; formatting is a UI concern.
     pub number: String,

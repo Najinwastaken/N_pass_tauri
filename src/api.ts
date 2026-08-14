@@ -21,6 +21,7 @@ export interface PasswordInput {
 export interface CardMeta {
   id: string;
   title: string;
+  provider: string;
   cardholder: string;
   last4: string;
   expiry: string;
@@ -29,6 +30,7 @@ export interface CardMeta {
 
 export interface CardInput {
   title: string;
+  provider: string;
   cardholder: string;
   number: string; // digits only
   expiry: string; // MM/YY

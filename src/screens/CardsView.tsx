@@ -15,6 +15,7 @@ import {
 
 const EMPTY: CardInput = {
   title: "",
+  provider: "",
   cardholder: "",
   number: "",
   expiry: "",
@@ -22,9 +23,22 @@ const EMPTY: CardInput = {
   notes: "",
 };
 
+const PROVIDERS = ["Visa", "Mastercard", "American Express", "Мир", "UnionPay", "Maestro"];
+
 /** "1234567890123456" -> "1234-5678-9012-3456" (display only). */
 function formatCardNumber(digits: string): string {
   return digits.replace(/(\d{4})(?=\d)/g, "$1-");
+}
+
+/** Best-effort payment network detection by BIN prefix. */
+function detectProvider(digits: string): string {
+  if (/^4/.test(digits)) return "Visa";
+  if (/^(5[1-5]|222[1-9]|22[3-9]|2[3-6]|27[01]|2720)/.test(digits)) return "Mastercard";
+  if (/^3[47]/.test(digits)) return "American Express";
+  if (/^220[0-4]/.test(digits)) return "Мир";
+  if (/^62/.test(digits)) return "UnionPay";
+  if (/^(5[06-8]|6304|676[1-3])/.test(digits)) return "Maestro";
+  return "";
 }
 
 export function CardsView() {
@@ -98,7 +112,9 @@ export function CardsView() {
               </span>
               <div className="entry-main">
                 <span className="entry-title">{e.title}</span>
-                <span className="entry-sub">{e.cardholder}</span>
+                <span className="entry-sub">
+                  {[e.provider, e.cardholder].filter(Boolean).join(" · ")}
+                </span>
                 <span className="entry-sub">{e.expiry}</span>
               </div>
               <div className="entry-secret">
@@ -164,6 +180,7 @@ function CardForm({
       ]);
       setForm({
         title: initial.title,
+        provider: initial.provider,
         cardholder: initial.cardholder,
         number,
         expiry: initial.expiry,
@@ -185,10 +202,15 @@ function CardForm({
     onDone();
   }
 
-  /** Keep digits in state, show dashes in the field. */
+  /** Keep digits in state, show dashes in the field. Auto-pick the
+      provider while the user has not chosen one explicitly. */
   function setNumber(e: React.ChangeEvent<HTMLInputElement>) {
     const digits = e.target.value.replace(/\D/g, "").slice(0, 19);
-    setForm((f) => ({ ...f, number: digits }));
+    setForm((f) => ({
+      ...f,
+      number: digits,
+      provider: f.provider || detectProvider(digits),
+    }));
   }
 
   /** Auto-insert the slash: "12" + "3" -> "12/3". */
@@ -220,10 +242,26 @@ function CardForm({
             onKeyDown={smartCopy()}
           />
         </label>
-        <label>
-          Cardholder
-          <input value={form.cardholder} onChange={set("cardholder")} onKeyDown={smartCopy()} />
-        </label>
+        <div className="form-row">
+          <label>
+            Payment provider
+            <select
+              value={form.provider}
+              onChange={(e) => setForm((f) => ({ ...f, provider: e.target.value }))}
+            >
+              <option value="">—</option>
+              {PROVIDERS.map((p) => (
+                <option key={p} value={p}>
+                  {p}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Cardholder
+            <input value={form.cardholder} onChange={set("cardholder")} onKeyDown={smartCopy()} />
+          </label>
+        </div>
         <label>
           Card number
           {/* Smart Ctrl+C with no selection copies digits only, no dashes */}

@@ -214,7 +214,8 @@ button.icon.danger:hover {
 /* ---------- inputs ---------- */
 
 input,
-textarea {
+textarea,
+select {
   width: 100%;
   background: var(--input-bg);
   border: 1px solid var(--border);
@@ -226,18 +227,29 @@ textarea {
   transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
 }
 
+select {
+  cursor: pointer;
+}
+
+select option {
+  background: var(--bg-base);
+  color: var(--text);
+}
+
 input::placeholder,
 textarea::placeholder {
   color: var(--text-faint);
 }
 
 input:hover,
-textarea:hover {
+textarea:hover,
+select:hover {
   border-color: var(--border-strong);
 }
 
 input:focus,
-textarea:focus {
+textarea:focus,
+select:focus {
   outline: none;
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-soft);

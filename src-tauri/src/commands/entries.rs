@@ -172,6 +172,7 @@ pub fn reveal_password(state: State<'_, AppState>, id: Uuid) -> Result<String, S
 pub struct CardMeta {
     pub id: Uuid,
     pub title: String,
+    pub provider: String,
     pub cardholder: String,
     pub last4: String,
     pub expiry: String,
@@ -184,6 +185,7 @@ impl From<&CardEntry> for CardMeta {
         Self {
             id: e.id,
             title: e.title.clone(),
+            provider: e.provider.clone(),
             cardholder: e.cardholder.clone(),
             last4: e.number[digits.saturating_sub(4)..].to_string(),
             expiry: e.expiry.clone(),
@@ -195,6 +197,8 @@ impl From<&CardEntry> for CardMeta {
 #[derive(Deserialize)]
 pub struct CardInput {
     pub title: String,
+    #[serde(default)]
+    pub provider: String,
     pub cardholder: String,
     /// Digits only — the frontend strips separators before sending.
     pub number: String,
@@ -231,6 +235,7 @@ pub fn add_card(state: State<'_, AppState>, input: CardInput) -> Result<CardMeta
         let entry = CardEntry {
             id: Uuid::new_v4(),
             title: input.title.trim().to_string(),
+            provider: input.provider,
             cardholder: input.cardholder,
             number: input.number,
             expiry: input.expiry,
@@ -254,6 +259,7 @@ pub fn update_card(state: State<'_, AppState>, id: Uuid, input: CardInput) -> Re
             .find(|e| e.id == id)
             .ok_or_else(|| "not_found".to_string())?;
         entry.title = input.title.trim().to_string();
+        entry.provider = input.provider;
         entry.cardholder = input.cardholder;
         entry.number = input.number;
         entry.expiry = input.expiry;
