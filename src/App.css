@@ -90,6 +90,7 @@ html,
 body,
 #root {
   height: 100%;
+  overflow: hidden;
 }
 
 /* The window itself is transparent — the app surface below paints the
@@ -296,10 +297,18 @@ input.invalid {
 
 /* ---------- app shell / titlebar ---------- */
 
+/* Fixed + 1px overscan on the right/bottom: with a transparent window and
+   fractional DPI scaling the viewport does not map to whole physical
+   pixels, and an unpainted hairline would let the window behind bleed
+   through. Overdrawing by 1px hides it; the window edge clips the excess. */
 .app-shell {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: -1px;
+  bottom: -1px;
   display: flex;
   flex-direction: column;
-  height: 100%;
   background:
     radial-gradient(60rem 40rem at 6% -8%, var(--bg-glow-1), transparent 60%),
     radial-gradient(54rem 38rem at 104% 108%, var(--bg-glow-2), transparent 60%),
