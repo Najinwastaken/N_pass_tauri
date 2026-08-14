@@ -10,6 +10,13 @@ const DEFAULTS: GeneratorOptions = {
   symbols: true,
 };
 
+const CLASS_OPTIONS: { key: keyof GeneratorOptions; label: string }[] = [
+  { key: "lowercase", label: "Lowercase (a–z)" },
+  { key: "uppercase", label: "Uppercase (A–Z)" },
+  { key: "digits", label: "Digits (0–9)" },
+  { key: "symbols", label: "Symbols (!@#…)" },
+];
+
 export function GeneratorView() {
   const [opts, setOpts] = useState<GeneratorOptions>(DEFAULTS);
   const [password, setPassword] = useState("");
@@ -36,7 +43,7 @@ export function GeneratorView() {
     setOpts((o) => ({ ...o, [field]: !o[field] }));
 
   return (
-    <div className="view narrow">
+    <div className="view">
       <div className="view-header">
         <h2>Password generator</h2>
       </div>
@@ -67,22 +74,19 @@ export function GeneratorView() {
           />
         </label>
 
-        <label className="check">
-          <input type="checkbox" checked={opts.lowercase} onChange={toggle("lowercase")} />
-          Lowercase (a–z)
-        </label>
-        <label className="check">
-          <input type="checkbox" checked={opts.uppercase} onChange={toggle("uppercase")} />
-          Uppercase (A–Z)
-        </label>
-        <label className="check">
-          <input type="checkbox" checked={opts.digits} onChange={toggle("digits")} />
-          Digits (0–9)
-        </label>
-        <label className="check">
-          <input type="checkbox" checked={opts.symbols} onChange={toggle("symbols")} />
-          Symbols (!@#…)
-        </label>
+        {CLASS_OPTIONS.map(({ key, label }) => (
+          <label key={key} className="check">
+            {label}
+            <span className="switch">
+              <input
+                type="checkbox"
+                checked={opts[key] as boolean}
+                onChange={toggle(key)}
+              />
+              <span className="switch-track" />
+            </span>
+          </label>
+        ))}
         {noClasses && <p className="error">Enable at least one character class.</p>}
       </div>
     </div>

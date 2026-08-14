@@ -697,13 +697,13 @@ input.invalid {
   min-width: 0;
 }
 
+/* Content is pinned to the left edge of the pane; max-widths only stop
+   lines from growing absurdly long. */
 .view {
   max-width: 1060px;
-  margin: 0 auto;
 }
 
-/* Forms, generator, settings: narrow centered column — header included,
-   so the title lines up with its content. */
+/* Forms and settings: narrow column, header lines up with the fields. */
 .view.narrow {
   max-width: 680px;
 }
@@ -870,6 +870,7 @@ input.invalid {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  max-width: 880px;
   background: var(--panel);
   backdrop-filter: blur(24px);
   border: 1px solid var(--border);
@@ -884,17 +885,25 @@ input.invalid {
   gap: 10px;
 }
 
+/* Always a single line: long passwords scroll horizontally instead of
+   wrapping and inflating the row. */
 .generated {
   flex: 1;
+  min-width: 0;
   background: var(--input-bg);
   border: 1px solid var(--border);
   border-radius: var(--r-md);
   padding: 13px 15px;
   font-family: "Cascadia Mono", Consolas, monospace;
-  font-size: 14.5px;
+  font-size: 14px;
   letter-spacing: 0.03em;
-  word-break: break-all;
+  white-space: nowrap;
+  overflow-x: auto;
   user-select: text;
+}
+
+.generated::-webkit-scrollbar {
+  height: 5px;
 }
 
 .slider-label {
@@ -912,18 +921,14 @@ input.invalid {
   accent-color: var(--accent);
 }
 
+/* Generator option row: label left, toggle switch right. */
 .check {
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: space-between;
+  max-width: 340px;
   font-size: 13.5px;
   cursor: pointer;
-}
-
-.check input {
-  width: 16px;
-  height: 16px;
-  accent-color: var(--accent);
 }
 
 /* ---------- settings ---------- */
