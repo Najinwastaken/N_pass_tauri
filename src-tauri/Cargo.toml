@@ -33,3 +33,12 @@ thiserror = "2"
 [dev-dependencies]
 tempfile = "3"
 
+# Size-focused release profile: LTO + single codegen unit let the linker
+# drop far more dead code; symbols are stripped from the binary.
+[profile.release]
+opt-level = "s"
+lto = true
+codegen-units = 1
+strip = true
+panic = "abort"
+
