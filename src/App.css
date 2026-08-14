@@ -290,12 +290,12 @@ input.invalid {
 }
 
 .titlebar {
-  height: 40px;
+  height: 46px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-left: 14px;
+  padding-left: 16px;
 }
 
 .titlebar-title {
@@ -315,17 +315,23 @@ input.invalid {
 
 .titlebar-buttons {
   display: flex;
+  align-items: center;
   height: 100%;
 }
 
 .titlebar-buttons button {
-  width: 46px;
+  width: 54px;
   height: 100%;
   background: transparent;
   color: var(--text-muted);
   border: none;
   border-radius: 0;
   padding: 0;
+}
+
+/* Settings sits apart from the window controls. */
+.titlebar-buttons button.settings {
+  margin-right: 10px;
 }
 
 .titlebar-buttons button:hover:not(:disabled) {

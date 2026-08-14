@@ -103,7 +103,13 @@ export default function App() {
 
   return (
     <div className={`app-shell ${maximized ? "maximized" : ""}`}>
-      <Titlebar />
+      <Titlebar
+        onSettings={
+          screen.kind === "main"
+            ? () => window.dispatchEvent(new CustomEvent("np-open-settings"))
+            : undefined
+        }
+      />
       <div className="app-content fade-in" key={screen.kind}>
         {content}
       </div>

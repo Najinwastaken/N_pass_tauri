@@ -8,7 +8,6 @@ import {
   IconLock,
   IconNote,
   IconShield,
-  IconSliders,
   IconSparkles,
 } from "../lib/icons";
 import { PasswordsView } from "./PasswordsView";
@@ -37,7 +36,6 @@ const SECTIONS: { id: Section; label: string; icon: React.ReactNode }[] = [
   { id: "cards", label: "Credit Cards", icon: <IconCard size={16} /> },
   { id: "notes", label: "Secure Notes", icon: <IconNote size={16} /> },
   { id: "generator", label: "Generator", icon: <IconSparkles size={16} /> },
-  { id: "settings", label: "Settings", icon: <IconSliders size={16} /> },
 ];
 
 /// Report user activity to the auto-lock timer, at most once per interval.
@@ -65,6 +63,14 @@ export function Main({ profile, onLocked }: Props) {
   const [section, setSection] = useState<Section>("passwords");
   const [theme, setTheme] = useState<Theme>(cachedTheme());
   useActivityReporting();
+
+  // Settings now lives in the titlebar (outside this component) — it
+  // signals via a window event.
+  useEffect(() => {
+    const open = () => setSection("settings");
+    window.addEventListener("np-open-settings", open);
+    return () => window.removeEventListener("np-open-settings", open);
+  }, []);
 
   // The vault's saved theme wins once we are unlocked.
   useEffect(() => {
