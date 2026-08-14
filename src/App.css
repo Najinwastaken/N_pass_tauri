@@ -309,12 +309,32 @@ input.invalid {
 }
 
 .titlebar {
+  position: relative;
   height: 46px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding-left: 16px;
+}
+
+/* Short centered divider under the top bar, fading at both ends —
+   same language as the sidebar divider. */
+.titlebar::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 44%;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--border-strong) 18%,
+    var(--border-strong) 82%,
+    transparent
+  );
 }
 
 .titlebar-title {
