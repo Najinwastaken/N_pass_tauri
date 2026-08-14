@@ -443,6 +443,70 @@ input.invalid {
   gap: 2px;
 }
 
+/* ---------- drag & drop ---------- */
+
+.drag-handle {
+  cursor: grab;
+  color: var(--text-muted);
+  font-size: 13px;
+  letter-spacing: -3px;
+  user-select: none;
+  padding: 4px 2px;
+}
+
+.entry.dragging {
+  opacity: 0.5;
+  border-style: dashed;
+}
+
+.entry.clickable {
+  cursor: pointer;
+}
+
+.entry.clickable:hover {
+  border-color: var(--accent);
+}
+
+/* ---------- context menu ---------- */
+
+.context-menu {
+  position: fixed;
+  z-index: 100;
+  list-style: none;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px;
+  min-width: 140px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+}
+
+.context-menu li {
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.context-menu li:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
+.entry-sub.url {
+  cursor: context-menu;
+}
+
+/* two fields side by side (expiry + cvv) */
+.form-row {
+  display: flex;
+  gap: 14px;
+}
+
+.form-row label {
+  flex: 1;
+}
+
 /* ---------- generator ---------- */
 
 .generator {

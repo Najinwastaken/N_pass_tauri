@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api, copyText, GeneratorOptions } from "../api";
+import { api, GeneratorOptions } from "../api";
 
 const DEFAULTS: GeneratorOptions = {
   length: 16,
@@ -27,7 +27,7 @@ export function GeneratorView() {
 
   async function handleCopy() {
     if (!password) return;
-    await copyText(password);
+    await api.copyText(password);
     setCopied(true);
   }
 

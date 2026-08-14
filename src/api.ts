@@ -18,6 +18,46 @@ export interface PasswordInput {
   notes: string;
 }
 
+export interface CardMeta {
+  id: string;
+  title: string;
+  cardholder: string;
+  last4: string;
+  expiry: string;
+  notes: string;
+}
+
+export interface CardInput {
+  title: string;
+  cardholder: string;
+  number: string; // digits only
+  expiry: string; // MM/YY
+  cvv: string;
+  notes: string;
+}
+
+export interface NoteMeta {
+  id: string;
+  title: string;
+}
+
+export interface NoteInput {
+  title: string;
+  body: string;
+}
+
+export interface KeyMeta {
+  id: string;
+  title: string;
+  notes: string;
+}
+
+export interface KeyInput {
+  title: string;
+  key: string;
+  notes: string;
+}
+
 export interface GeneratorOptions {
   length: number;
   lowercase: boolean;
@@ -25,6 +65,9 @@ export interface GeneratorOptions {
   digits: boolean;
   symbols: boolean;
 }
+
+export type EntryKind = "passwords" | "cards" | "notes" | "keys";
+export type SecretKind = "password" | "card_number" | "card_cvv" | "key";
 
 export const api = {
   listProfiles: () => invoke<string[]>("list_profiles"),
@@ -45,11 +88,40 @@ export const api = {
   deletePassword: (id: string) => invoke<void>("delete_password", { id }),
   revealPassword: (id: string) => invoke<string>("reveal_password", { id }),
 
+  listCards: () => invoke<CardMeta[]>("list_cards"),
+  addCard: (input: CardInput) => invoke<CardMeta>("add_card", { input }),
+  updateCard: (id: string, input: CardInput) =>
+    invoke<void>("update_card", { id, input }),
+  deleteCard: (id: string) => invoke<void>("delete_card", { id }),
+  revealCardField: (id: string, field: "number" | "cvv") =>
+    invoke<string>("reveal_card_field", { id, field }),
+
+  listNotes: () => invoke<NoteMeta[]>("list_notes"),
+  addNote: (input: NoteInput) => invoke<NoteMeta>("add_note", { input }),
+  updateNote: (id: string, input: NoteInput) =>
+    invoke<void>("update_note", { id, input }),
+  deleteNote: (id: string) => invoke<void>("delete_note", { id }),
+  getNoteBody: (id: string) => invoke<string>("get_note_body", { id }),
+
+  listKeys: () => invoke<KeyMeta[]>("list_keys"),
+  addKey: (input: KeyInput) => invoke<KeyMeta>("add_key", { input }),
+  updateKey: (id: string, input: KeyInput) =>
+    invoke<void>("update_key", { id, input }),
+  deleteKey: (id: string) => invoke<void>("delete_key", { id }),
+  revealKey: (id: string) => invoke<string>("reveal_key", { id }),
+
+  reorderEntries: (kind: EntryKind, orderedIds: string[]) =>
+    invoke<void>("reorder_entries", { kind, orderedIds }),
+
   generatePassword: (opts: GeneratorOptions) =>
     invoke<string>("generate_password", { ...opts }),
-};
 
-/** Copy text to the clipboard (auto-clear arrives in M3 via the Rust side). */
-export async function copyText(text: string): Promise<void> {
-  await navigator.clipboard.writeText(text);
-}
+  /** Copy through Rust: 30 s later the clipboard is cleared if unchanged. */
+  copyText: (text: string) => invoke<void>("copy_text", { text }),
+  /** Copy a secret vault→clipboard directly; it never enters the WebView. */
+  copySecret: (kind: SecretKind, id: string) =>
+    invoke<void>("copy_secret", { kind, id }),
+
+  openUrl: (url: string) => invoke<void>("open_url", { url }),
+  touchActivity: () => invoke<void>("touch_activity"),
+};

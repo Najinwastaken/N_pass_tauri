@@ -21,6 +21,7 @@ pub async fn unlock(
     }
 
     let (data, key, header) = vault::load(&path, &password).map_err(err_code)?;
+    state.touch(); // fresh activity so auto-lock does not fire immediately
     *state.vault.lock().expect("poisoned") = Some(UnlockedVault {
         profile: name.trim().to_string(),
         path,

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { listen } from "@tauri-apps/api/event";
 import { api } from "./api";
 import { ProfileSelect } from "./screens/ProfileSelect";
 import { CreateProfile } from "./screens/CreateProfile";
@@ -30,6 +31,14 @@ export default function App() {
       if (current) setScreen({ kind: "main", profile: current });
       else await goToStart();
     })();
+
+    // Auto-lock (timer or minimize) fires this event from Rust.
+    const unlisten = listen("vault-locked", () => {
+      void goToStart();
+    });
+    return () => {
+      void unlisten.then((f) => f());
+    };
   }, []);
 
   switch (screen.kind) {

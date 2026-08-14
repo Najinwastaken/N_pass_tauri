@@ -73,6 +73,7 @@ pub async fn create_profile(
     // Creating a profile unlocks it right away — no point asking for the
     // password again on the next screen.
     let salt = vault::load_header(&path).map_err(err_code)?.salt;
+    state.touch();
     *state.vault.lock().expect("poisoned") = Some(UnlockedVault {
         profile: name,
         path,

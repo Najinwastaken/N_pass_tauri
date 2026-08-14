@@ -1,7 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { api } from "../api";
 import { PasswordsView } from "./PasswordsView";
 import { GeneratorView } from "./GeneratorView";
+import { CardsView } from "./CardsView";
+import { NotesView } from "./NotesView";
+import { KeysView } from "./KeysView";
 
 interface Props {
   profile: string;
@@ -18,15 +21,37 @@ type Section =
 
 const SECTIONS: { id: Section; label: string; ready: boolean }[] = [
   { id: "passwords", label: "Passwords", ready: true },
-  { id: "passkeys", label: "Passkeys", ready: false },
-  { id: "cards", label: "Credit Cards", ready: false },
-  { id: "notes", label: "Secure Notes", ready: false },
+  { id: "passkeys", label: "Passkeys", ready: true },
+  { id: "cards", label: "Credit Cards", ready: true },
+  { id: "notes", label: "Secure Notes", ready: true },
   { id: "generator", label: "Pass. Generation", ready: true },
   { id: "settings", label: "Settings", ready: false },
 ];
 
+/// Report user activity to the auto-lock timer, at most once per interval.
+function useActivityReporting() {
+  useEffect(() => {
+    let last = 0;
+    const report = () => {
+      const now = Date.now();
+      if (now - last < 10_000) return;
+      last = now;
+      void api.touchActivity();
+    };
+    window.addEventListener("mousemove", report);
+    window.addEventListener("keydown", report);
+    window.addEventListener("click", report);
+    return () => {
+      window.removeEventListener("mousemove", report);
+      window.removeEventListener("keydown", report);
+      window.removeEventListener("click", report);
+    };
+  }, []);
+}
+
 export function Main({ profile, onLocked }: Props) {
   const [section, setSection] = useState<Section>("passwords");
+  useActivityReporting();
 
   async function handleLock() {
     await api.lock();
@@ -56,6 +81,9 @@ export function Main({ profile, onLocked }: Props) {
       </aside>
       <main className="content">
         {section === "passwords" && <PasswordsView />}
+        {section === "passkeys" && <KeysView />}
+        {section === "cards" && <CardsView />}
+        {section === "notes" && <NotesView />}
         {section === "generator" && <GeneratorView />}
       </main>
     </div>
