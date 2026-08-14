@@ -200,6 +200,13 @@ button.icon {
   line-height: 0;
 }
 
+/* Uniform glyph size for every icon button, regardless of the size the
+   icon component was instantiated with. */
+button.icon svg {
+  width: 17px;
+  height: 17px;
+}
+
 button.icon:hover:not(:disabled) {
   background: var(--hover);
   color: var(--text);
