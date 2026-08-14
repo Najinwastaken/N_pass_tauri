@@ -26,6 +26,7 @@
   --accent: #5b7fff;
   --accent-2: #7c5cff;
   --accent-soft: rgba(91, 127, 255, 0.16);
+  --accent-glow: rgba(91, 127, 255, 0.32);
   --accent-text: #9db4ff;
   --on-accent: #ffffff;
 
@@ -65,6 +66,7 @@
   --accent: #3d63e8;
   --accent-2: #6d4de0;
   --accent-soft: rgba(61, 99, 232, 0.12);
+  --accent-glow: rgba(61, 99, 232, 0.22);
   --accent-text: #3d63e8;
   --on-accent: #ffffff;
 
@@ -161,6 +163,16 @@ button {
 
 button:hover:not(:disabled) {
   filter: brightness(1.12);
+  box-shadow: 0 4px 22px var(--accent-glow);
+}
+
+button.secondary:hover:not(:disabled),
+button.icon:hover:not(:disabled),
+.nav-item:hover:not(:disabled),
+.theme-switch button:hover:not(:disabled),
+.titlebar-buttons button:hover:not(:disabled),
+.select-trigger:hover:not(:disabled) {
+  box-shadow: none;
 }
 
 button:active:not(:disabled) {
@@ -381,6 +393,60 @@ input.invalid {
 .titlebar-buttons button.close:hover {
   background: #e81123;
   color: #fff;
+}
+
+/* ---------- neon accents ---------- */
+
+/* @property lets the browser interpolate the custom property, which makes
+   the conic-gradient angle animatable (Houdini). */
+@property --glow-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+/* A slow beam of light running along the card border + a soft halo.
+   Both pseudos are masked to a ring so the card interior stays clean. */
+.glow-card {
+  position: relative;
+}
+
+.glow-card::before,
+.glow-card::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 2px;
+  background: conic-gradient(
+    from var(--glow-angle),
+    transparent 0%,
+    transparent 60%,
+    var(--accent) 74%,
+    var(--accent-2) 84%,
+    transparent 96%
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  animation: glow-rotate 7s linear infinite;
+}
+
+.glow-card::after {
+  filter: blur(14px);
+  opacity: 0.55;
+}
+
+@keyframes glow-rotate {
+  to {
+    --glow-angle: 360deg;
+  }
+}
+
+/* Active nav item glows faintly. */
+.nav-item.active {
+  box-shadow: 0 0 18px var(--accent-glow);
 }
 
 /* ---------- animations ---------- */
@@ -787,6 +853,22 @@ input.invalid {
   gap: 8px;
 }
 
+/* Rows cascade in one after another. */
+.entry-list > li {
+  animation: fade-in 0.28s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+
+.entry-list > li:nth-child(1) { animation-delay: 0.02s; }
+.entry-list > li:nth-child(2) { animation-delay: 0.05s; }
+.entry-list > li:nth-child(3) { animation-delay: 0.08s; }
+.entry-list > li:nth-child(4) { animation-delay: 0.11s; }
+.entry-list > li:nth-child(5) { animation-delay: 0.14s; }
+.entry-list > li:nth-child(6) { animation-delay: 0.17s; }
+.entry-list > li:nth-child(7) { animation-delay: 0.2s; }
+.entry-list > li:nth-child(8) { animation-delay: 0.23s; }
+.entry-list > li:nth-child(9) { animation-delay: 0.26s; }
+.entry-list > li:nth-child(n + 10) { animation-delay: 0.29s; }
+
 .entry {
   display: flex;
   align-items: center;
@@ -1140,4 +1222,15 @@ input.invalid {
 .switch input:checked + .switch-track::after {
   transform: translateX(18px);
   background: #fff;
+}
+
+/* ---------- reduced motion ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .glow-card::before,
+  .glow-card::after,
+  .entry-list > li,
+  .fade-in {
+    animation: none;
+  }
 }
