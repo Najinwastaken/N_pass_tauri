@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { api } from "./api";
 import { applyTheme, cachedTheme } from "./lib/theme";
 import { Titlebar } from "./Titlebar";
@@ -19,9 +20,27 @@ type Screen =
   | { kind: "unlock"; profile: string }
   | { kind: "main"; profile: string };
 
+/** Rounded corners only make sense for a floating window — track maximize. */
+function useMaximized(): boolean {
+  const [maximized, setMaximized] = useState(false);
+
+  useEffect(() => {
+    const win = getCurrentWindow();
+    const update = () => void win.isMaximized().then(setMaximized);
+    update();
+    const unlisten = win.onResized(update);
+    return () => {
+      void unlisten.then((f) => f());
+    };
+  }, []);
+
+  return maximized;
+}
+
 export default function App() {
   const [screen, setScreen] = useState<Screen>({ kind: "loading" });
   const [profiles, setProfiles] = useState<string[]>([]);
+  const maximized = useMaximized();
 
   async function goToStart() {
     const list = await api.listProfiles();
@@ -83,7 +102,7 @@ export default function App() {
   }
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell ${maximized ? "maximized" : ""}`}>
       <Titlebar />
       <div className="app-content fade-in" key={screen.kind}>
         {content}
