@@ -27,3 +27,6 @@ vaults/
 *.njsproj
 *.sln
 *.sw?
+
+# Claude Code local files
+.claude/
