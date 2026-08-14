@@ -45,7 +45,7 @@ export function CreateProfile({ onCreated, onBack }: Props) {
   return (
     <div className="center-screen">
       <h1 className="app-title">New profile</h1>
-      <form className="card form glow-card" onSubmit={handleSubmit}>
+      <form className="card form" onSubmit={handleSubmit}>
         <label>
           Profile name
           <input

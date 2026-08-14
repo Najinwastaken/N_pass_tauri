@@ -33,7 +33,7 @@ export function Unlock({ profile, onUnlocked, onBack }: Props) {
   return (
     <div className="center-screen">
       <h1 className="app-title">{profile}</h1>
-      <form className="card form glow-card" onSubmit={handleSubmit}>
+      <form className="card form" onSubmit={handleSubmit}>
         {/* key={shake} remounts the input so the CSS shake animation replays */}
         <input
           key={shake}
