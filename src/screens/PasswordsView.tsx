@@ -3,6 +3,7 @@ import { api, PasswordInput, PasswordMeta } from "../api";
 import { smartCopy } from "../lib/smartCopy";
 import { useDragReorder } from "../lib/useDragReorder";
 import { useContextMenu } from "../lib/ContextMenu";
+import { StrengthMeter } from "../lib/strength";
 
 const EMPTY: PasswordInput = {
   title: "",
@@ -213,6 +214,7 @@ function EntryForm({
               {showPw ? "🙈" : "👁"}
             </button>
           </div>
+          <StrengthMeter password={form.password} />
         </label>
         <label>
           URL

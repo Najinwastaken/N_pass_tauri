@@ -1,11 +1,16 @@
 import { useEffect, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { api } from "./api";
+import { applyTheme, cachedTheme } from "./lib/theme";
+import { Titlebar } from "./Titlebar";
 import { ProfileSelect } from "./screens/ProfileSelect";
 import { CreateProfile } from "./screens/CreateProfile";
 import { Unlock } from "./screens/Unlock";
 import { Main } from "./screens/Main";
 import "./App.css";
+
+// Apply the cached theme before first paint to avoid a flash.
+applyTheme(cachedTheme());
 
 type Screen =
   | { kind: "loading" }
@@ -41,11 +46,12 @@ export default function App() {
     };
   }, []);
 
+  let content: React.ReactNode = null;
   switch (screen.kind) {
     case "loading":
-      return null;
+      break;
     case "profiles":
-      return (
+      content = (
         <ProfileSelect
           profiles={profiles}
           onOpen={(profile) => setScreen({ kind: "unlock", profile })}
@@ -53,22 +59,35 @@ export default function App() {
           onChanged={() => void goToStart()}
         />
       );
+      break;
     case "create":
-      return (
+      content = (
         <CreateProfile
           onCreated={(profile) => setScreen({ kind: "main", profile })}
           onBack={() => void goToStart()}
         />
       );
+      break;
     case "unlock":
-      return (
+      content = (
         <Unlock
           profile={screen.profile}
           onUnlocked={() => setScreen({ kind: "main", profile: screen.profile })}
           onBack={() => void goToStart()}
         />
       );
+      break;
     case "main":
-      return <Main profile={screen.profile} onLocked={() => void goToStart()} />;
+      content = <Main profile={screen.profile} onLocked={() => void goToStart()} />;
+      break;
   }
+
+  return (
+    <div className="app-shell">
+      <Titlebar />
+      <div className="app-content fade-in" key={screen.kind}>
+        {content}
+      </div>
+    </div>
+  );
 }

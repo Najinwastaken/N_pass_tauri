@@ -1,28 +1,11 @@
 import { useState } from "react";
 import { api } from "../api";
+import { StrengthMeter } from "../lib/strength";
 
 interface Props {
   onCreated: (name: string) => void;
   onBack: () => void;
 }
-
-/** Rough strength estimate: 0..4 based on length and character variety. */
-function strength(pw: string): number {
-  if (!pw) return 0;
-  let classes = 0;
-  if (/[a-z]/.test(pw)) classes++;
-  if (/[A-Z]/.test(pw)) classes++;
-  if (/[0-9]/.test(pw)) classes++;
-  if (/[^a-zA-Z0-9]/.test(pw)) classes++;
-  let score = 0;
-  if (pw.length >= 8) score++;
-  if (pw.length >= 12) score++;
-  if (classes >= 2) score++;
-  if (classes >= 3 && pw.length >= 10) score++;
-  return score;
-}
-
-const STRENGTH_LABELS = ["", "Weak", "Fair", "Good", "Strong"];
 
 export function CreateProfile({ onCreated, onBack }: Props) {
   const [name, setName] = useState("");
@@ -31,8 +14,6 @@ export function CreateProfile({ onCreated, onBack }: Props) {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [shake, setShake] = useState(0);
-
-  const score = strength(password);
 
   function fail(message: string) {
     setError(message);
@@ -83,14 +64,7 @@ export function CreateProfile({ onCreated, onBack }: Props) {
             onChange={(e) => setPassword(e.target.value)}
           />
         </label>
-        {password && (
-          <div className={`strength strength-${score}`}>
-            <div className="strength-bar">
-              <div style={{ width: `${(score / 4) * 100}%` }} />
-            </div>
-            <span>{STRENGTH_LABELS[score]}</span>
-          </div>
-        )}
+        <StrengthMeter password={password} />
         <label>
           Repeat password
           <input

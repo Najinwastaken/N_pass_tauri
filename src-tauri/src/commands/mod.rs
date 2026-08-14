@@ -4,6 +4,7 @@ pub mod entries;
 pub mod misc;
 pub mod profiles;
 pub mod session;
+pub mod settings;
 
 use crate::vault::VaultError;
 

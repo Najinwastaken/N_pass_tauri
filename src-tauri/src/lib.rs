@@ -103,6 +103,8 @@ pub fn run() {
             commands::entries::delete_key,
             commands::entries::reveal_key,
             commands::entries::reorder_entries,
+            commands::settings::get_settings,
+            commands::settings::update_settings,
             commands::misc::generate_password,
             commands::misc::copy_text,
             commands::misc::copy_secret,

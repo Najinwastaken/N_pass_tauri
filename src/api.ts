@@ -66,6 +66,12 @@ export interface GeneratorOptions {
   symbols: boolean;
 }
 
+export interface Settings {
+  auto_lock_minutes: number;
+  lock_on_minimize: boolean;
+  theme: string;
+}
+
 export type EntryKind = "passwords" | "cards" | "notes" | "keys";
 export type SecretKind = "password" | "card_number" | "card_cvv" | "key";
 
@@ -112,6 +118,10 @@ export const api = {
 
   reorderEntries: (kind: EntryKind, orderedIds: string[]) =>
     invoke<void>("reorder_entries", { kind, orderedIds }),
+
+  getSettings: () => invoke<Settings>("get_settings"),
+  updateSettings: (settings: Settings) =>
+    invoke<void>("update_settings", { settings }),
 
   generatePassword: (opts: GeneratorOptions) =>
     invoke<string>("generate_password", { ...opts }),

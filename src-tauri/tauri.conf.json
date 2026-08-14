@@ -13,8 +13,12 @@
     "windows": [
       {
         "title": "N-Pass",
-        "width": 800,
-        "height": 600
+        "width": 900,
+        "height": 640,
+        "minWidth": 700,
+        "minHeight": 480,
+        "decorations": false,
+        "center": true
       }
     ],
     "security": {
