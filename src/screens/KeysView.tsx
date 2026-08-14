@@ -2,6 +2,16 @@ import { useEffect, useState } from "react";
 import { api, KeyInput, KeyMeta } from "../api";
 import { smartCopy } from "../lib/smartCopy";
 import { useDragReorder } from "../lib/useDragReorder";
+import {
+  IconCopy,
+  IconEye,
+  IconEyeOff,
+  IconGrip,
+  IconKey,
+  IconPencil,
+  IconPlus,
+  IconTrash,
+} from "../lib/icons";
 
 const EMPTY: KeyInput = { title: "", key: "", notes: "" };
 
@@ -52,18 +62,31 @@ export function KeysView() {
     <div className="view">
       <div className="view-header">
         <h2>Passkeys</h2>
-        <button onClick={() => setEditing("new")}>+ Add</button>
+        <button onClick={() => setEditing("new")}>
+          <IconPlus size={15} />
+          Add
+        </button>
       </div>
-      {entries.length === 0 && <p className="muted">No keys yet.</p>}
+      {entries.length === 0 && (
+        <div className="empty-state">
+          <IconKey size={36} />
+          <span>No keys yet.</span>
+        </div>
+      )}
       <ul className="entry-list">
         {entries.map((e, index) => {
           const drag = dragProps(index, e.id);
           return (
             <li key={e.id} {...drag} className={`entry ${drag.className}`}>
-              <span className="drag-handle" title="Drag to reorder">⋮⋮</span>
+              <span className="drag-handle" title="Drag to reorder">
+                <IconGrip size={14} />
+              </span>
+              <span className="entry-icon">
+                <IconKey size={17} />
+              </span>
               <div className="entry-main">
                 <span className="entry-title">{e.title}</span>
-                {e.notes && <span className="entry-sub muted">{e.notes}</span>}
+                {e.notes && <span className="entry-sub">{e.notes}</span>}
               </div>
               <div className="entry-secret">
                 <code>{revealed[e.id] ?? "••••••••"}</code>
@@ -74,20 +97,20 @@ export function KeysView() {
                   title={revealed[e.id] !== undefined ? "Hide" : "Show"}
                   onClick={() => void toggleReveal(e.id)}
                 >
-                  {revealed[e.id] !== undefined ? "🙈" : "👁"}
+                  {revealed[e.id] !== undefined ? <IconEyeOff size={15} /> : <IconEye size={15} />}
                 </button>
                 <button
                   className="icon"
                   title="Copy key"
                   onClick={() => void api.copySecret("key", e.id)}
                 >
-                  ⧉
+                  <IconCopy size={15} />
                 </button>
                 <button className="icon" title="Edit" onClick={() => setEditing(e)}>
-                  ✎
+                  <IconPencil size={15} />
                 </button>
                 <button className="icon danger" title="Delete" onClick={() => void handleDelete(e)}>
-                  🗑
+                  <IconTrash size={15} />
                 </button>
               </div>
             </li>
@@ -166,7 +189,7 @@ function KeyForm({
               title={showKey ? "Hide" : "Show"}
               onClick={() => setShowKey((v) => !v)}
             >
-              {showKey ? "🙈" : "👁"}
+              {showKey ? <IconEyeOff size={16} /> : <IconEye size={16} />}
             </button>
           </div>
         </label>

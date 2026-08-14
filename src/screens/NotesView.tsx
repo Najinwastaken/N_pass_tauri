@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { api, NoteInput, NoteMeta } from "../api";
 import { smartCopy } from "../lib/smartCopy";
 import { useDragReorder } from "../lib/useDragReorder";
+import { IconGrip, IconNote, IconPlus, IconTrash } from "../lib/icons";
 
 export function NotesView() {
   const [entries, setEntries] = useState<NoteMeta[]>([]);
@@ -39,9 +40,17 @@ export function NotesView() {
     <div className="view">
       <div className="view-header">
         <h2>Secure Notes</h2>
-        <button onClick={() => setEditing("new")}>+ Add</button>
+        <button onClick={() => setEditing("new")}>
+          <IconPlus size={15} />
+          Add
+        </button>
       </div>
-      {entries.length === 0 && <p className="muted">No notes yet.</p>}
+      {entries.length === 0 && (
+        <div className="empty-state">
+          <IconNote size={36} />
+          <span>No notes yet.</span>
+        </div>
+      )}
       <ul className="entry-list">
         {entries.map((e, index) => {
           const drag = dragProps(index, e.id);
@@ -52,7 +61,12 @@ export function NotesView() {
               className={`entry clickable ${drag.className}`}
               onClick={() => setEditing(e)}
             >
-              <span className="drag-handle" title="Drag to reorder">⋮⋮</span>
+              <span className="drag-handle" title="Drag to reorder">
+                <IconGrip size={14} />
+              </span>
+              <span className="entry-icon">
+                <IconNote size={17} />
+              </span>
               <div className="entry-main">
                 <span className="entry-title">{e.title}</span>
               </div>
@@ -65,7 +79,7 @@ export function NotesView() {
                     void handleDelete(e);
                   }}
                 >
-                  🗑
+                  <IconTrash size={15} />
                 </button>
               </div>
             </li>

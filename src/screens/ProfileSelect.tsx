@@ -1,4 +1,5 @@
 import { api } from "../api";
+import { IconX } from "../lib/icons";
 
 interface Props {
   profiles: string[];
@@ -27,14 +28,14 @@ export function ProfileSelect({ profiles, onOpen, onCreate, onChanged }: Props) 
             <span className="profile-avatar">{name[0]?.toUpperCase()}</span>
             <span className="profile-name">{name}</span>
             <button
-              className="tile-delete"
+              className="icon danger tile-delete"
               title="Delete profile"
               onClick={(e) => {
                 e.stopPropagation();
                 void handleDelete(name);
               }}
             >
-              ×
+              <IconX size={14} />
             </button>
           </div>
         ))}

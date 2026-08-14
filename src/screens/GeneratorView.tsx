@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api, GeneratorOptions } from "../api";
+import { IconCheck, IconCopy, IconRefresh } from "../lib/icons";
 
 const DEFAULTS: GeneratorOptions = {
   length: 16,
@@ -47,10 +48,11 @@ export function GeneratorView() {
             title="Regenerate"
             onClick={() => setOpts((o) => ({ ...o }))}
           >
-            ↻
+            <IconRefresh size={16} />
           </button>
           <button onClick={() => void handleCopy()} disabled={noClasses}>
-            {copied ? "Copied ✓" : "Copy"}
+            {copied ? <IconCheck size={15} /> : <IconCopy size={15} />}
+            {copied ? "Copied" : "Copy"}
           </button>
         </div>
 

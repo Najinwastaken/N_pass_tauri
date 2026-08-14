@@ -4,6 +4,17 @@ import { smartCopy } from "../lib/smartCopy";
 import { useDragReorder } from "../lib/useDragReorder";
 import { useContextMenu } from "../lib/ContextMenu";
 import { StrengthMeter } from "../lib/strength";
+import {
+  IconCopy,
+  IconExternal,
+  IconEye,
+  IconEyeOff,
+  IconGrip,
+  IconPencil,
+  IconPlus,
+  IconShield,
+  IconTrash,
+} from "../lib/icons";
 
 const EMPTY: PasswordInput = {
   title: "",
@@ -62,21 +73,34 @@ export function PasswordsView() {
     <div className="view">
       <div className="view-header">
         <h2>Passwords</h2>
-        <button onClick={() => setEditing("new")}>+ Add</button>
+        <button onClick={() => setEditing("new")}>
+          <IconPlus size={15} />
+          Add
+        </button>
       </div>
-      {entries.length === 0 && <p className="muted">No entries yet.</p>}
+      {entries.length === 0 && (
+        <div className="empty-state">
+          <IconShield size={36} />
+          <span>No passwords yet — add your first one.</span>
+        </div>
+      )}
       <ul className="entry-list">
         {entries.map((e, index) => {
           const drag = dragProps(index, e.id);
           return (
             <li key={e.id} {...drag} className={`entry ${drag.className}`}>
-              <span className="drag-handle" title="Drag to reorder">⋮⋮</span>
+              <span className="drag-handle" title="Drag to reorder">
+                <IconGrip size={14} />
+              </span>
+              <span className="entry-icon">
+                <IconShield size={17} />
+              </span>
               <div className="entry-main">
                 <span className="entry-title">{e.title}</span>
                 <span className="entry-sub">{e.username}</span>
                 {e.url && (
                   <span
-                    className="entry-sub muted url"
+                    className="entry-sub url"
                     onContextMenu={(ev) =>
                       openMenu(ev, [
                         { label: "Open URL", action: () => void api.openUrl(e.url) },
@@ -94,7 +118,7 @@ export function PasswordsView() {
               <div className="entry-actions">
                 {e.url && (
                   <button className="icon" title="Open URL" onClick={() => void api.openUrl(e.url)}>
-                    ↗
+                    <IconExternal size={15} />
                   </button>
                 )}
                 <button
@@ -102,20 +126,20 @@ export function PasswordsView() {
                   title={revealed[e.id] !== undefined ? "Hide" : "Show"}
                   onClick={() => void toggleReveal(e.id)}
                 >
-                  {revealed[e.id] !== undefined ? "🙈" : "👁"}
+                  {revealed[e.id] !== undefined ? <IconEyeOff size={15} /> : <IconEye size={15} />}
                 </button>
                 <button
                   className="icon"
                   title="Copy password"
                   onClick={() => void api.copySecret("password", e.id)}
                 >
-                  ⧉
+                  <IconCopy size={15} />
                 </button>
                 <button className="icon" title="Edit" onClick={() => setEditing(e)}>
-                  ✎
+                  <IconPencil size={15} />
                 </button>
                 <button className="icon danger" title="Delete" onClick={() => void handleDelete(e)}>
-                  🗑
+                  <IconTrash size={15} />
                 </button>
               </div>
             </li>
@@ -211,7 +235,7 @@ function EntryForm({
               title={showPw ? "Hide" : "Show"}
               onClick={() => setShowPw((v) => !v)}
             >
-              {showPw ? "🙈" : "👁"}
+              {showPw ? <IconEyeOff size={16} /> : <IconEye size={16} />}
             </button>
           </div>
           <StrengthMeter password={form.password} />

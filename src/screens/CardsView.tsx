@@ -2,6 +2,16 @@ import { useEffect, useState } from "react";
 import { api, CardInput, CardMeta } from "../api";
 import { digitsOnly, expiryWholeValue, smartCopy } from "../lib/smartCopy";
 import { useDragReorder } from "../lib/useDragReorder";
+import {
+  IconCard,
+  IconCopy,
+  IconEye,
+  IconEyeOff,
+  IconGrip,
+  IconPencil,
+  IconPlus,
+  IconTrash,
+} from "../lib/icons";
 
 const EMPTY: CardInput = {
   title: "",
@@ -64,19 +74,32 @@ export function CardsView() {
     <div className="view">
       <div className="view-header">
         <h2>Credit Cards</h2>
-        <button onClick={() => setEditing("new")}>+ Add</button>
+        <button onClick={() => setEditing("new")}>
+          <IconPlus size={15} />
+          Add
+        </button>
       </div>
-      {entries.length === 0 && <p className="muted">No cards yet.</p>}
+      {entries.length === 0 && (
+        <div className="empty-state">
+          <IconCard size={36} />
+          <span>No cards yet.</span>
+        </div>
+      )}
       <ul className="entry-list">
         {entries.map((e, index) => {
           const drag = dragProps(index, e.id);
           return (
             <li key={e.id} {...drag} className={`entry ${drag.className}`}>
-              <span className="drag-handle" title="Drag to reorder">⋮⋮</span>
+              <span className="drag-handle" title="Drag to reorder">
+                <IconGrip size={14} />
+              </span>
+              <span className="entry-icon">
+                <IconCard size={17} />
+              </span>
               <div className="entry-main">
                 <span className="entry-title">{e.title}</span>
                 <span className="entry-sub">{e.cardholder}</span>
-                <span className="entry-sub muted">{e.expiry}</span>
+                <span className="entry-sub">{e.expiry}</span>
               </div>
               <div className="entry-secret">
                 <code>{revealed[e.id] ?? `•••• ${e.last4}`}</code>
@@ -87,27 +110,27 @@ export function CardsView() {
                   title={revealed[e.id] !== undefined ? "Hide number" : "Show number"}
                   onClick={() => void toggleRevealNumber(e.id)}
                 >
-                  {revealed[e.id] !== undefined ? "🙈" : "👁"}
+                  {revealed[e.id] !== undefined ? <IconEyeOff size={15} /> : <IconEye size={15} />}
                 </button>
                 <button
                   className="icon"
                   title="Copy number (no dashes)"
                   onClick={() => void api.copySecret("card_number", e.id)}
                 >
-                  ⧉
+                  <IconCopy size={15} />
                 </button>
                 <button
                   className="icon"
                   title="Copy CVV"
                   onClick={() => void api.copySecret("card_cvv", e.id)}
                 >
-                  #
+                  CVV
                 </button>
                 <button className="icon" title="Edit" onClick={() => setEditing(e)}>
-                  ✎
+                  <IconPencil size={15} />
                 </button>
                 <button className="icon danger" title="Delete" onClick={() => void handleDelete(e)}>
-                  🗑
+                  <IconTrash size={15} />
                 </button>
               </div>
             </li>
@@ -243,7 +266,7 @@ function CardForm({
                 title={showCvv ? "Hide" : "Show"}
                 onClick={() => setShowCvv((v) => !v)}
               >
-                {showCvv ? "🙈" : "👁"}
+                {showCvv ? <IconEyeOff size={16} /> : <IconEye size={16} />}
               </button>
             </div>
           </label>

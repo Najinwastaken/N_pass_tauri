@@ -1,6 +1,16 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
 import { applyTheme, cachedTheme, Theme } from "../lib/theme";
+import { ThemeSwitch } from "../lib/ThemeSwitch";
+import {
+  IconCard,
+  IconKey,
+  IconLock,
+  IconNote,
+  IconShield,
+  IconSliders,
+  IconSparkles,
+} from "../lib/icons";
 import { PasswordsView } from "./PasswordsView";
 import { GeneratorView } from "./GeneratorView";
 import { CardsView } from "./CardsView";
@@ -21,13 +31,13 @@ type Section =
   | "generator"
   | "settings";
 
-const SECTIONS: { id: Section; label: string }[] = [
-  { id: "passwords", label: "Passwords" },
-  { id: "passkeys", label: "Passkeys" },
-  { id: "cards", label: "Credit Cards" },
-  { id: "notes", label: "Secure Notes" },
-  { id: "generator", label: "Pass. Generation" },
-  { id: "settings", label: "Settings" },
+const SECTIONS: { id: Section; label: string; icon: React.ReactNode }[] = [
+  { id: "passwords", label: "Passwords", icon: <IconShield size={16} /> },
+  { id: "passkeys", label: "Passkeys", icon: <IconKey size={16} /> },
+  { id: "cards", label: "Credit Cards", icon: <IconCard size={16} /> },
+  { id: "notes", label: "Secure Notes", icon: <IconNote size={16} /> },
+  { id: "generator", label: "Generator", icon: <IconSparkles size={16} /> },
+  { id: "settings", label: "Settings", icon: <IconSliders size={16} /> },
 ];
 
 /// Report user activity to the auto-lock timer, at most once per interval.
@@ -65,8 +75,7 @@ export function Main({ profile, onLocked }: Props) {
     });
   }, []);
 
-  async function toggleTheme() {
-    const next: Theme = theme === "dark" ? "light" : "dark";
+  async function changeTheme(next: Theme) {
     applyTheme(next);
     setTheme(next);
     const settings = await api.getSettings();
@@ -82,14 +91,8 @@ export function Main({ profile, onLocked }: Props) {
     <div className="main-layout">
       <aside className="sidebar">
         <div className="sidebar-profile">
-          <span>{profile}</span>
-          <button
-            className="icon theme-toggle"
-            title={theme === "dark" ? "Light theme" : "Dark theme"}
-            onClick={() => void toggleTheme()}
-          >
-            {theme === "dark" ? "☀️" : "🌙"}
-          </button>
+          <span className="sidebar-avatar">{profile[0]?.toUpperCase()}</span>
+          <span className="sidebar-profile-name">{profile}</span>
         </div>
         <nav>
           {SECTIONS.map((s) => (
@@ -98,13 +101,18 @@ export function Main({ profile, onLocked }: Props) {
               className={`nav-item ${section === s.id ? "active" : ""}`}
               onClick={() => setSection(s.id)}
             >
+              {s.icon}
               {s.label}
             </button>
           ))}
         </nav>
-        <button className="nav-item lock" onClick={() => void handleLock()}>
-          🔒 Lock
-        </button>
+        <div className="sidebar-footer">
+          <ThemeSwitch theme={theme} onChange={(t) => void changeTheme(t)} />
+          <button className="nav-item lock" onClick={() => void handleLock()}>
+            <IconLock size={15} />
+            Lock
+          </button>
+        </div>
       </aside>
       <main className="content fade-in" key={section}>
         {section === "passwords" && <PasswordsView />}
@@ -112,7 +120,7 @@ export function Main({ profile, onLocked }: Props) {
         {section === "cards" && <CardsView />}
         {section === "notes" && <NotesView />}
         {section === "generator" && <GeneratorView />}
-        {section === "settings" && <SettingsView onThemeChange={setTheme} />}
+        {section === "settings" && <SettingsView theme={theme} onThemeChange={(t) => void changeTheme(t)} />}
       </main>
     </div>
   );
