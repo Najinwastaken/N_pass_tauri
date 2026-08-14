@@ -3,7 +3,7 @@
 // buttons must NOT have the attribute or they would drag instead of click.
 
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { IconLock, IconMinus, IconSliders, IconSquare, IconX } from "./lib/icons";
+import { IconGear, IconLock, IconMinus, IconSquare, IconX } from "./lib/icons";
 
 interface Props {
   /** Present only while a vault is open — shows the Settings button. */
@@ -22,17 +22,17 @@ export function Titlebar({ onSettings }: Props) {
       <div className="titlebar-buttons">
         {onSettings && (
           <button className="settings" title="Settings" onClick={onSettings}>
-            <IconSliders size={17} />
+            <IconGear size={19} />
           </button>
         )}
         <button title="Minimize" onClick={() => void win.minimize()}>
-          <IconMinus size={18} />
+          <IconMinus size={20} />
         </button>
         <button title="Maximize" onClick={() => void win.toggleMaximize()}>
-          <IconSquare size={15} />
+          <IconSquare size={16} />
         </button>
         <button className="close" title="Close" onClick={() => void win.close()}>
-          <IconX size={18} />
+          <IconX size={20} />
         </button>
       </div>
     </div>

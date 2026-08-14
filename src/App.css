@@ -316,22 +316,24 @@ input.invalid {
 .titlebar-buttons {
   display: flex;
   align-items: center;
+  gap: 6px;
   height: 100%;
+  padding-right: 10px;
 }
 
+/* Compact controls: the hit area is the icon plus 4px on every side. */
 .titlebar-buttons button {
-  width: 54px;
-  height: 100%;
   background: transparent;
   color: var(--text-muted);
   border: none;
-  border-radius: 0;
-  padding: 0;
+  border-radius: 6px;
+  padding: 4px;
+  line-height: 0;
 }
 
 /* Settings sits apart from the window controls. */
 .titlebar-buttons button.settings {
-  margin-right: 10px;
+  margin-right: 12px;
 }
 
 .titlebar-buttons button:hover:not(:disabled) {
