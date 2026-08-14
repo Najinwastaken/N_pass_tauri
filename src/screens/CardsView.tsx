@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { api, CardInput, CardMeta } from "../api";
 import { digitsOnly, expiryWholeValue, smartCopy } from "../lib/smartCopy";
 import { useDragReorder } from "../lib/useDragReorder";
+import { Select } from "../lib/Select";
 import {
   IconCard,
   IconCopy,
@@ -245,17 +246,14 @@ function CardForm({
         <div className="form-row">
           <label>
             Payment provider
-            <select
+            <Select
               value={form.provider}
-              onChange={(e) => setForm((f) => ({ ...f, provider: e.target.value }))}
-            >
-              <option value="">—</option>
-              {PROVIDERS.map((p) => (
-                <option key={p} value={p}>
-                  {p}
-                </option>
-              ))}
-            </select>
+              onChange={(provider) => setForm((f) => ({ ...f, provider }))}
+              options={[
+                { value: "", label: "—" },
+                ...PROVIDERS.map((p) => ({ value: p, label: p })),
+              ]}
+            />
           </label>
           <label>
             Cardholder

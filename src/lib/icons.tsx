@@ -190,3 +190,5 @@ export const IconRefresh = makeIcon(
 );
 
 export const IconCheck = makeIcon(<path d="M20 6 9 17l-5-5" />);
+
+export const IconChevronDown = makeIcon(<path d="m6 9 6 6 6-6" />);
