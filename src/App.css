@@ -326,7 +326,7 @@ input.invalid {
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 44%;
+  width: 31%;
   height: 1px;
   background: linear-gradient(
     to right,
