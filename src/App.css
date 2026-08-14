@@ -331,10 +331,6 @@ input.invalid {
   line-height: 0;
 }
 
-/* Settings sits apart from the window controls. */
-.titlebar-buttons button.settings {
-  margin-right: 12px;
-}
 
 .titlebar-buttons button:hover:not(:disabled) {
   background: var(--hover);
