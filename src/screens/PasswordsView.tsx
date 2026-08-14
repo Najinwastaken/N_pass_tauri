@@ -200,7 +200,7 @@ function EntryForm({
   if (!loaded) return null;
 
   return (
-    <div className="view">
+    <div className="view narrow">
       <div className="view-header">
         <h2>{initial ? "Edit entry" : "New entry"}</h2>
       </div>

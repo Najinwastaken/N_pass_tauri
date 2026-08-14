@@ -36,7 +36,7 @@ export function GeneratorView() {
     setOpts((o) => ({ ...o, [field]: !o[field] }));
 
   return (
-    <div className="view">
+    <div className="view narrow">
       <div className="view-header">
         <h2>Password generator</h2>
       </div>

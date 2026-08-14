@@ -204,7 +204,7 @@ function CardForm({
   if (!loaded) return null;
 
   return (
-    <div className="view">
+    <div className="view narrow">
       <div className="view-header">
         <h2>{initial ? "Edit card" : "New card"}</h2>
       </div>

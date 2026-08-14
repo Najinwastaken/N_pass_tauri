@@ -30,7 +30,7 @@ export function SettingsView({ theme, onThemeChange }: Props) {
   }
 
   return (
-    <div className="view">
+    <div className="view narrow">
       <div className="view-header">
         <h2>Settings</h2>
         {saved > 0 && (

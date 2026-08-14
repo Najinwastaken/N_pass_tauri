@@ -158,7 +158,7 @@ function KeyForm({
   if (!loaded) return null;
 
   return (
-    <div className="view">
+    <div className="view narrow">
       <div className="view-header">
         <h2>{initial ? "Edit key" : "New key"}</h2>
       </div>

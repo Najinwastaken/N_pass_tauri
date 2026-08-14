@@ -390,7 +390,6 @@ input.invalid {
   display: flex;
   flex-direction: column;
   gap: 15px;
-  max-width: 640px;
 }
 
 .form label {
@@ -703,6 +702,12 @@ input.invalid {
   margin: 0 auto;
 }
 
+/* Forms, generator, settings: narrow centered column — header included,
+   so the title lines up with its content. */
+.view.narrow {
+  max-width: 680px;
+}
+
 .view-header {
   display: flex;
   align-items: center;
@@ -865,7 +870,6 @@ input.invalid {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  max-width: 640px;
   background: var(--panel);
   backdrop-filter: blur(24px);
   border: 1px solid var(--border);
@@ -928,7 +932,6 @@ input.invalid {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  max-width: 560px;
 }
 
 .settings-row {
