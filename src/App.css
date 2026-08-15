@@ -735,6 +735,61 @@ input.invalid {
   font-weight: 600;
 }
 
+/* Esc hint — a typographic composition centered in the sidebar's empty
+   area, visible only while dragging. */
+.drag-hint {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(50% + 130px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  opacity: 0;
+  transform: translateY(calc(-50% + 14px)) scale(0.92);
+  transition: opacity 0.28s ease, transform 0.28s cubic-bezier(0.2, 0.7, 0.3, 1.25);
+  pointer-events: none;
+}
+
+.drag-hint.visible {
+  opacity: 0.9;
+  transform: translateY(-50%) scale(1);
+}
+
+.drag-hint-label {
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+/* Big glowing keycap. */
+.drag-hint-esc {
+  font-size: 24px;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  color: var(--text);
+  padding: 14px 24px 8px;
+  background: var(--input-bg);
+  border: 1px solid rgba(91, 127, 255, 0.35);
+  border-bottom-width: 2px;
+  border-radius: 14px;
+  box-shadow:
+    0 0 18px var(--accent-soft),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* The lettering is stretched upward, keycap box unaffected. */
+.drag-hint-esc-text {
+  display: inline-block;
+  transform: scaleY(1.35);
+  transform-origin: bottom;
+  line-height: 1;
+}
+
+
 .sidebar-footer {
   display: flex;
   flex-direction: column;
@@ -839,29 +894,57 @@ input.invalid {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 8px;
 }
 
+/* Hairline separators between rows instead of per-row cards. */
+.entry-list > li:not(:first-child) {
+  border-top: 1px solid var(--border);
+}
+
+/* Clean list style: transparent rows, highlight on hover only. */
 .entry {
   display: flex;
   align-items: center;
   gap: 14px;
-  background: var(--panel);
-  backdrop-filter: blur(20px);
-  border: 1px solid var(--border);
+  background: transparent;
   border-radius: var(--r-md);
-  padding: 14px 18px;
-  transition: border-color 0.15s, background 0.15s;
+  padding: 13px 14px;
+  transition: background 0.15s;
 }
 
 .entry:hover {
-  border-color: var(--border-strong);
   background: var(--hover);
 }
 
 .entry.dragging {
   opacity: 0.45;
-  border-style: dashed;
+}
+
+/* Insertion indicator: an accent line in the gap where the dragged item
+   would land on drop. */
+.entry {
+  position: relative;
+}
+
+.entry.drop-above::after,
+.entry.drop-below::after {
+  content: "";
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  height: 3px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  box-shadow: 0 0 10px var(--accent-soft);
+  pointer-events: none;
+}
+
+.entry.drop-above::after {
+  top: -2px;
+}
+
+.entry.drop-below::after {
+  bottom: -2px;
 }
 
 .entry.clickable {
@@ -880,6 +963,7 @@ input.invalid {
   opacity: 1;
 }
 
+/* With transparent rows the icon tile is the row's visual anchor. */
 .entry-icon {
   width: 40px;
   height: 40px;

@@ -72,6 +72,19 @@ export function Main({ profile, onLocked }: Props) {
     return () => window.removeEventListener("np-open-settings", open);
   }, []);
 
+  // Esc hint: visible only while an entry is being dragged.
+  const [draggingActive, setDraggingActive] = useState(false);
+  useEffect(() => {
+    const on = () => setDraggingActive(true);
+    const off = () => setDraggingActive(false);
+    window.addEventListener("np-drag-active", on);
+    window.addEventListener("np-drag-idle", off);
+    return () => {
+      window.removeEventListener("np-drag-active", on);
+      window.removeEventListener("np-drag-idle", off);
+    };
+  }, []);
+
   // The vault's saved theme wins once we are unlocked.
   useEffect(() => {
     void api.getSettings().then((s) => {
@@ -112,6 +125,13 @@ export function Main({ profile, onLocked }: Props) {
             </button>
           ))}
         </nav>
+        <div className={`drag-hint ${draggingActive ? "visible" : ""}`} aria-hidden={!draggingActive}>
+          <span className="drag-hint-label">press</span>
+          <span className="drag-hint-esc">
+            <span className="drag-hint-esc-text">ESC</span>
+          </span>
+          <span className="drag-hint-label">to cancel drag</span>
+        </div>
         <div className="sidebar-footer">
           <ThemeSwitch theme={theme} onChange={(t) => void changeTheme(t)} />
           <button className="nav-item lock" onClick={() => void handleLock()}>
