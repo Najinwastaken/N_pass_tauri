@@ -33,10 +33,39 @@ pub fn run() {
         .plugin(tauri_plugin_clipboard_manager::init())
         .manage(AppState::default())
         .setup(|app| {
-            // Vaults live in the per-user app data dir:
-            // %APPDATA%\com.najin.npass\vaults
-            let dir = app.path().app_data_dir()?.join("vaults");
+            // Vaults live next to the executable — the app is fully
+            // portable and all its data sits in one obvious place.
+            // (Note: requires a writable install dir; the NSIS installer
+            // is per-user so this holds, MSI/Program Files would not.)
+            let exe_dir = std::env::current_exe()?
+                .parent()
+                .ok_or("executable has no parent directory")?
+                .to_path_buf();
+            let dir = exe_dir.join("vaults");
             std::fs::create_dir_all(&dir)?;
+
+            // One-time migration from the old AppData location: copy the
+            // files over if the new dir is empty. Originals are kept as a
+            // free backup.
+            let is_empty = std::fs::read_dir(&dir)?.next().is_none();
+            if is_empty {
+                let old_dir = app.path().app_data_dir()?.join("vaults");
+                if old_dir.exists() {
+                    for entry in std::fs::read_dir(&old_dir)?.flatten() {
+                        let path = entry.path();
+                        let is_vault = path
+                            .file_name()
+                            .and_then(|n| n.to_str())
+                            .is_some_and(|n| n.ends_with(".npass") || n.ends_with(".npass.bak"));
+                        if is_vault {
+                            if let Some(name) = path.file_name() {
+                                let _ = std::fs::copy(&path, dir.join(name));
+                            }
+                        }
+                    }
+                }
+            }
+
             *app.state::<AppState>().vaults_dir.lock().expect("poisoned") = dir;
 
             // Auto-lock by inactivity: a background thread compares idle
