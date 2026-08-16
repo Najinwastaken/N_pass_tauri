@@ -98,6 +98,7 @@ pub fn run() {
             commands::entries::update_note,
             commands::entries::delete_note,
             commands::entries::get_note_body,
+            commands::entries::search_notes,
             commands::entries::list_keys,
             commands::entries::add_key,
             commands::entries::update_key,

@@ -383,6 +383,31 @@ pub fn delete_note(state: State<'_, AppState>, id: Uuid) -> Result<(), String> {
     })
 }
 
+/// Full-text note search, executed entirely on the Rust side where the
+/// decrypted bodies already live. Only ids/titles of matching notes are
+/// returned — bodies never reach the WebView in bulk. Case-insensitive
+/// including non-ASCII (both sides lowercased).
+#[tauri::command]
+pub fn search_notes(state: State<'_, AppState>, query: String) -> Result<Vec<NoteMeta>, String> {
+    let q = query.trim().to_lowercase();
+    with_vault(&state, |vault| {
+        Ok(vault
+            .data
+            .notes
+            .iter()
+            .filter(|e| {
+                q.is_empty()
+                    || e.title.to_lowercase().contains(&q)
+                    || e.body.to_lowercase().contains(&q)
+            })
+            .map(|e| NoteMeta {
+                id: e.id,
+                title: e.title.clone(),
+            })
+            .collect())
+    })
+}
+
 /// The note body is revealed only when the user opens the note.
 #[tauri::command]
 pub fn get_note_body(state: State<'_, AppState>, id: Uuid) -> Result<String, String> {

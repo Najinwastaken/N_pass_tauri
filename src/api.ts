@@ -113,6 +113,7 @@ export const api = {
     invoke<void>("update_note", { id, input }),
   deleteNote: (id: string) => invoke<void>("delete_note", { id }),
   getNoteBody: (id: string) => invoke<string>("get_note_body", { id }),
+  searchNotes: (query: string) => invoke<NoteMeta[]>("search_notes", { query }),
 
   listKeys: () => invoke<KeyMeta[]>("list_keys"),
   addKey: (input: KeyInput) => invoke<KeyMeta>("add_key", { input }),

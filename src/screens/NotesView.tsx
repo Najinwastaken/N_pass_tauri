@@ -1,15 +1,38 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api, NoteInput, NoteMeta } from "../api";
 import { smartCopy } from "../lib/smartCopy";
 import { useDragReorder } from "../lib/useDragReorder";
-import { IconGrip, IconNote, IconPlus, IconTrash } from "../lib/icons";
-import { SearchBox, useSearch } from "../lib/useSearch";
+import { IconGrip, IconNote, IconPlus, IconSearch, IconTrash } from "../lib/icons";
+import { SearchBox } from "../lib/useSearch";
 
 export function NotesView() {
   const [entries, setEntries] = useState<NoteMeta[]>([]);
   const [editing, setEditing] = useState<NoteMeta | "new" | null>(null);
   const { dragProps, handleProps } = useDragReorder("notes", entries, setEntries);
-  const { query, setQuery, filtered, searching } = useSearch(entries, (e) => [e.title]);
+
+  // Full-text search runs in Rust (bodies never reach the WebView in
+  // bulk). Debounced; a sequence counter discards out-of-order replies.
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<NoteMeta[] | null>(null);
+  const searchSeq = useRef(0);
+  const searching = query.trim().length > 0;
+
+  useEffect(() => {
+    if (!searching) {
+      setResults(null);
+      return;
+    }
+    const seq = ++searchSeq.current;
+    const timer = setTimeout(() => {
+      void api.searchNotes(query).then((found) => {
+        if (searchSeq.current === seq) setResults(found);
+      });
+    }, 150);
+    return () => clearTimeout(timer);
+    // entries in deps: re-run the search after add/edit/delete.
+  }, [query, searching, entries]);
+
+  const filtered = searching ? (results ?? []) : entries;
 
   async function refresh() {
     setEntries(await api.listNotes());
@@ -54,6 +77,12 @@ export function NotesView() {
         <div className="empty-state">
           <IconNote size={36} />
           <span>No notes yet.</span>
+        </div>
+      )}
+      {entries.length > 0 && searching && results !== null && results.length === 0 && (
+        <div className="empty-state">
+          <IconSearch size={36} />
+          <span>Nothing matches “{query}”.</span>
         </div>
       )}
       <ul className="entry-list">
