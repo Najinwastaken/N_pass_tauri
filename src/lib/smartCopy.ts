@@ -4,6 +4,7 @@
 // Everything goes through the Rust copy command, so the 30 s auto-clear
 // applies to every copy made inside the app.
 
+import { useEffect } from "react";
 import { api } from "../api";
 
 type CopyableElement = HTMLInputElement | HTMLTextAreaElement;
@@ -47,4 +48,23 @@ export function expiryWholeValue(el: CopyableElement): string {
 /** Strip everything but digits (card number copies without separators). */
 export function digitsOnly(el: CopyableElement): string {
   return el.value.replace(/\D/g, "");
+}
+
+/**
+ * Clicking anywhere outside a read-only cell input clears its selection
+ * and focus. Most app surfaces are user-select:none, so the browser never
+ * clears it on its own. Call once per list view.
+ */
+export function useClearCellSelection() {
+  useEffect(() => {
+    const onDown = (ev: MouseEvent) => {
+      const active = document.activeElement;
+      if (!(active instanceof HTMLInputElement) || !active.readOnly) return;
+      if (ev.target instanceof Node && active.parentElement?.contains(ev.target)) return;
+      active.setSelectionRange(0, 0);
+      active.blur();
+    };
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, []);
 }

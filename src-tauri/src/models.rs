@@ -69,6 +69,10 @@ pub struct Settings {
     /// Lock the vault when the window is minimized.
     #[serde(default)]
     pub lock_on_minimize: bool,
+    /// Clear the clipboard this many seconds after we copied to it
+    /// (only if it still holds our value). 0 = never clear.
+    #[serde(default = "default_clipboard_clear_seconds")]
+    pub clipboard_clear_seconds: u32,
     /// "dark" | "light"
     #[serde(default = "default_theme")]
     pub theme: String,
@@ -76,6 +80,10 @@ pub struct Settings {
 
 fn default_auto_lock_minutes() -> u32 {
     10
+}
+
+fn default_clipboard_clear_seconds() -> u32 {
+    30
 }
 
 fn default_theme() -> String {
@@ -87,6 +95,7 @@ impl Default for Settings {
         Self {
             auto_lock_minutes: default_auto_lock_minutes(),
             lock_on_minimize: false,
+            clipboard_clear_seconds: default_clipboard_clear_seconds(),
             theme: default_theme(),
         }
     }

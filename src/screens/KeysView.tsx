@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { api, KeyInput, KeyMeta } from "../api";
-import { smartCopy } from "../lib/smartCopy";
+import { smartCopy, useClearCellSelection } from "../lib/smartCopy";
 import { useDragReorder } from "../lib/useDragReorder";
+import { Cell } from "../lib/Cell";
+import { SearchBox, useSearch } from "../lib/useSearch";
 import {
   IconCopy,
   IconEye,
@@ -19,7 +21,9 @@ export function KeysView() {
   const [entries, setEntries] = useState<KeyMeta[]>([]);
   const [editing, setEditing] = useState<KeyMeta | "new" | null>(null);
   const [revealed, setRevealed] = useState<Record<string, string>>({});
-  const dragProps = useDragReorder("keys", entries, setEntries);
+  const { dragProps, handleProps } = useDragReorder("keys", entries, setEntries);
+  useClearCellSelection();
+  const { query, setQuery, filtered, searching } = useSearch(entries, (e) => [e.title, e.notes]);
 
   async function refresh() {
     setEntries(await api.listKeys());
@@ -62,10 +66,13 @@ export function KeysView() {
     <div className="view">
       <div className="view-header">
         <h2>Passkeys</h2>
-        <button onClick={() => setEditing("new")}>
-          <IconPlus size={15} />
-          Add
-        </button>
+        <div className="view-header-actions">
+          <SearchBox query={query} onChange={setQuery} />
+          <button onClick={() => setEditing("new")}>
+            <IconPlus size={15} />
+            Add
+          </button>
+        </div>
       </div>
       {entries.length === 0 && (
         <div className="empty-state">
@@ -74,20 +81,20 @@ export function KeysView() {
         </div>
       )}
       <ul className="entry-list">
-        {entries.map((e, index) => {
-          const drag = dragProps(index, e.id);
+        {filtered.map((e, index) => {
+          const drag = searching ? { className: "" } : dragProps(index, e.id);
           return (
             <li key={e.id} {...drag} className={`entry ${drag.className}`}>
-              <span className="drag-handle" title="Drag to reorder">
-                <IconGrip size={14} />
-              </span>
+              {!searching && (
+                <span className="drag-handle" title="Drag to reorder" {...handleProps(e.id)}>
+                  <IconGrip size={14} />
+                </span>
+              )}
               <span className="entry-icon">
                 <IconKey size={17} />
               </span>
-              <div className="entry-main">
-                <span className="entry-title">{e.title}</span>
-                {e.notes && <span className="entry-sub">{e.notes}</span>}
-              </div>
+              <Cell value={e.title} kind="title" />
+              <Cell value={e.notes} kind="notes" />
               <div className="entry-secret">
                 <code>{revealed[e.id] ?? "••••••••"}</code>
               </div>

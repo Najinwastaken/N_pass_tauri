@@ -13,8 +13,8 @@ use crate::state::AppState;
 
 use super::err_code;
 
-/// How long a copied secret stays in the clipboard.
-const CLIPBOARD_CLEAR_SECS: u64 = 30;
+/// Fallback when no vault is unlocked (e.g. nothing to read settings from).
+const DEFAULT_CLIPBOARD_CLEAR_SECS: u64 = 30;
 
 /// Generate a random password with the OS CSPRNG. Works without an
 /// unlocked vault — the generator page is available any time.
@@ -48,12 +48,24 @@ fn copy_with_autoclear(app: &AppHandle, text: String) -> Result<(), String> {
         .write_text(text.clone())
         .map_err(|e| format!("error: {e}"))?;
 
+    // Delay comes from the unlocked vault's settings; 0 disables clearing.
+    let secs = state
+        .vault
+        .lock()
+        .expect("poisoned")
+        .as_ref()
+        .map(|v| v.data.settings.clipboard_clear_seconds as u64)
+        .unwrap_or(DEFAULT_CLIPBOARD_CLEAR_SECS);
+    if secs == 0 {
+        return Ok(());
+    }
+
     // Every copy bumps the generation; the sleeping thread below only acts
     // if its generation is still the latest when it wakes up.
     let generation = state.next_clipboard_gen();
     let app = app.clone();
     std::thread::spawn(move || {
-        std::thread::sleep(Duration::from_secs(CLIPBOARD_CLEAR_SECS));
+        std::thread::sleep(Duration::from_secs(secs));
         let state = app.state::<AppState>();
         if state.current_clipboard_gen() != generation {
             return; // a newer copy superseded this one

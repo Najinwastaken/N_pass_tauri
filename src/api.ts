@@ -71,6 +71,7 @@ export interface GeneratorOptions {
 export interface Settings {
   auto_lock_minutes: number;
   lock_on_minimize: boolean;
+  clipboard_clear_seconds: number;
   theme: string;
 }
 
@@ -86,6 +87,8 @@ export const api = {
   unlock: (name: string, password: string) =>
     invoke<void>("unlock", { name, password }),
   lock: () => invoke<void>("lock"),
+  changeMasterPassword: (current: string, newPassword: string) =>
+    invoke<void>("change_master_password", { current, newPassword }),
   currentProfile: () => invoke<string | null>("current_profile"),
 
   listPasswords: () => invoke<PasswordMeta[]>("list_passwords"),

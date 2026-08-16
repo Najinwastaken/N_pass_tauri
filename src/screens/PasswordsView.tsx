@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { api, PasswordInput, PasswordMeta } from "../api";
-import { smartCopy } from "../lib/smartCopy";
+import { smartCopy, useClearCellSelection } from "../lib/smartCopy";
 import { useDragReorder } from "../lib/useDragReorder";
 import { useContextMenu } from "../lib/ContextMenu";
 import { StrengthMeter } from "../lib/strength";
@@ -12,9 +12,12 @@ import {
   IconGrip,
   IconPencil,
   IconPlus,
+  IconSearch,
   IconShield,
   IconTrash,
 } from "../lib/icons";
+import { Cell } from "../lib/Cell";
+import { SearchBox, useSearch } from "../lib/useSearch";
 
 const EMPTY: PasswordInput = {
   title: "",
@@ -28,8 +31,15 @@ export function PasswordsView() {
   const [entries, setEntries] = useState<PasswordMeta[]>([]);
   const [editing, setEditing] = useState<PasswordMeta | "new" | null>(null);
   const [revealed, setRevealed] = useState<Record<string, string>>({});
-  const dragProps = useDragReorder("passwords", entries, setEntries);
+  const { dragProps, handleProps } = useDragReorder("passwords", entries, setEntries);
   const { menu, openMenu } = useContextMenu();
+  useClearCellSelection();
+  const { query, setQuery, filtered, searching } = useSearch(entries, (e) => [
+    e.title,
+    e.username,
+    e.url,
+    e.notes,
+  ]);
 
   async function refresh() {
     setEntries(await api.listPasswords());
@@ -73,10 +83,13 @@ export function PasswordsView() {
     <div className="view">
       <div className="view-header">
         <h2>Passwords</h2>
-        <button onClick={() => setEditing("new")}>
-          <IconPlus size={15} />
-          Add
-        </button>
+        <div className="view-header-actions">
+          <SearchBox query={query} onChange={setQuery} />
+          <button onClick={() => setEditing("new")}>
+            <IconPlus size={15} />
+            Add
+          </button>
+        </div>
       </div>
       {entries.length === 0 && (
         <div className="empty-state">
@@ -84,34 +97,40 @@ export function PasswordsView() {
           <span>No passwords yet — add your first one.</span>
         </div>
       )}
+      {entries.length > 0 && filtered.length === 0 && (
+        <div className="empty-state">
+          <IconSearch size={36} />
+          <span>Nothing matches “{query}”.</span>
+        </div>
+      )}
       <ul className="entry-list">
-        {entries.map((e, index) => {
-          const drag = dragProps(index, e.id);
+        {filtered.map((e, index) => {
+          const drag = searching
+            ? { className: "" }
+            : dragProps(index, e.id);
           return (
             <li key={e.id} {...drag} className={`entry ${drag.className}`}>
-              <span className="drag-handle" title="Drag to reorder">
-                <IconGrip size={14} />
-              </span>
+              {!searching && (
+                <span className="drag-handle" title="Drag to reorder" {...handleProps(e.id)}>
+                  <IconGrip size={14} />
+                </span>
+              )}
               <span className="entry-icon">
                 <IconShield size={17} />
               </span>
-              <div className="entry-main">
-                <span className="entry-title">{e.title}</span>
-                <span className="entry-sub">{e.username}</span>
-                {e.url && (
-                  <span
-                    className="entry-sub url"
-                    onContextMenu={(ev) =>
-                      openMenu(ev, [
-                        { label: "Open URL", action: () => void api.openUrl(e.url) },
-                        { label: "Copy URL", action: () => void api.copyText(e.url) },
-                      ])
-                    }
-                  >
-                    {e.url}
-                  </span>
-                )}
-              </div>
+              <Cell value={e.title} kind="title" />
+              <Cell value={e.username} kind="user" />
+              <Cell
+                value={e.url}
+                kind="url"
+                onContextMenu={(ev) =>
+                  e.url &&
+                  openMenu(ev, [
+                    { label: "Open URL", action: () => void api.openUrl(e.url) },
+                    { label: "Copy URL", action: () => void api.copyText(e.url) },
+                  ])
+                }
+              />
               <div className="entry-secret">
                 <code>{revealed[e.id] ?? "••••••••"}</code>
               </div>

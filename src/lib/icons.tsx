@@ -192,3 +192,10 @@ export const IconRefresh = makeIcon(
 export const IconCheck = makeIcon(<path d="M20 6 9 17l-5-5" />);
 
 export const IconChevronDown = makeIcon(<path d="m6 9 6 6 6-6" />);
+
+export const IconSearch = makeIcon(
+  <>
+    <circle cx="11" cy="11" r="7" />
+    <path d="m21 21-4.3-4.3" />
+  </>,
+);

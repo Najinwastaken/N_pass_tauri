@@ -875,6 +875,50 @@ input.invalid {
   letter-spacing: -0.01em;
 }
 
+/* ---------- search box ---------- */
+
+.view-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 240px;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 0 4px 0 10px;
+  color: var(--text-faint);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.search-box:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+  color: var(--text-muted);
+}
+
+.search-box input {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 8px 0;
+  font-size: 13px;
+}
+
+.search-box input:focus {
+  background: transparent;
+  box-shadow: none;
+}
+
+.search-box svg {
+  flex-shrink: 0;
+}
+
 .empty-state {
   display: flex;
   flex-direction: column;
@@ -908,7 +952,7 @@ input.invalid {
   gap: 12px;
   background: transparent;
   border-radius: var(--r-md);
-  padding: 6px 14px;
+  padding: 7px 14px;
   transition: background 0.15s;
 }
 
@@ -974,6 +1018,124 @@ input.invalid {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* ---------- copyable read-only cells (column layout) ---------- */
+
+.cell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.cell-title {
+  flex: 1.1 1 0;
+}
+
+.cell-user {
+  flex: 0.8 1 0;
+}
+
+.cell-url {
+  flex: 1.4 1 0;
+}
+
+/* keys */
+.cell-notes {
+  flex: 2.2 1 0;
+}
+
+/* cards */
+.cell-provider {
+  flex: 0.6 1 0;
+}
+
+.cell-holder {
+  flex: 0.9 1 0;
+}
+
+.cell-expiry {
+  flex: 0.5 1 0;
+}
+
+.cell input {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--r-sm);
+  box-shadow: none;
+  padding: 5px 8px;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: text;
+  /* Shrink-to-fit: the input hugs its text, so the copy button sits right
+     after the value; long values cap at the column width and ellipsize. */
+  field-sizing: content;
+  width: auto;
+  max-width: calc(100% - 24px);
+}
+
+.cell-title input {
+  font-weight: 600;
+  font-size: 13.5px;
+}
+
+.cell-user input,
+.cell-url input {
+  color: var(--text-muted);
+}
+
+.cell input:hover {
+  border-color: var(--border);
+}
+
+.cell input:focus {
+  border-color: var(--accent);
+  background: var(--input-bg);
+  box-shadow: none;
+  color: var(--text);
+}
+
+.cell-copy {
+  flex-shrink: 0;
+  margin-left: 2px;
+  padding: 4px;
+  opacity: 0;
+  transition: opacity 0.15s, transform 0.12s, background 0.15s, color 0.15s;
+}
+
+button.cell-copy:hover:not(:disabled) {
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  transform: scale(1.12);
+}
+
+button.cell-copy:active:not(:disabled) {
+  transform: scale(0.88);
+}
+
+/* Success flash after copying. */
+button.cell-copy.copied {
+  opacity: 1;
+  color: var(--success);
+  animation: copy-pop 0.3s cubic-bezier(0.2, 0.7, 0.3, 1.4);
+}
+
+@keyframes copy-pop {
+  0% { transform: scale(0.7); }
+  60% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+.cell:hover .cell-copy,
+.cell input:focus + .cell-copy {
+  opacity: 1;
+}
+
+button.cell-copy svg {
+  width: 13px;
+  height: 13px;
 }
 
 .entry-main {
@@ -1232,6 +1394,26 @@ input.invalid {
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
+}
+
+/* expandable settings block (master password) */
+.settings-block {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+}
+
+.settings-block-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.change-password {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
 }
 
 /* toggle switch */

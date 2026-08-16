@@ -15,6 +15,16 @@ export function useDragReorder<T extends { id: string }>(
   const [dragging, setDragging] = useState<string | null>(null);
   /** Insertion gap: 0..items.length (line above item N, or below the last). */
   const [dropGap, setDropGap] = useState<number | null>(null);
+  /** Row is draggable ONLY while the mouse is down on its grip handle —
+      otherwise pressing LMB on text starts a drag instead of a selection. */
+  const [armedId, setArmedId] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Disarm when the button is released without a drag ever starting.
+    const disarm = () => setArmedId(null);
+    window.addEventListener("mouseup", disarm);
+    return () => window.removeEventListener("mouseup", disarm);
+  }, []);
 
   // Refs mirror state so the document-level handlers (attached once per
   // drag) always see current values without re-binding.
@@ -71,6 +81,7 @@ export function useDragReorder<T extends { id: string }>(
     dragIndex.current = null;
     setDragging(null);
     setGap(null);
+    setArmedId(null);
     // Anyone interested (e.g. the sidebar Esc hint) can listen.
     window.dispatchEvent(new CustomEvent("np-drag-idle"));
   }
@@ -125,7 +136,7 @@ export function useDragReorder<T extends { id: string }>(
     if (dropGap === index) classes.push("drop-above");
     if (dropGap === index + 1 && index === items.length - 1) classes.push("drop-below");
     return {
-      draggable: true,
+      draggable: armedId === id,
       onDragStart: (e: React.DragEvent) => onDragStart(e, index),
       onDragOver: (e: React.DragEvent) => onDragOver(e, index),
       onDragEnd: reset, // fires after drop, or alone when Esc cancels
@@ -133,5 +144,12 @@ export function useDragReorder<T extends { id: string }>(
     };
   }
 
-  return dragProps;
+  /** Spread onto the row's grip handle. */
+  function handleProps(id: string) {
+    return {
+      onMouseDown: () => setArmedId(id),
+    };
+  }
+
+  return { dragProps, handleProps };
 }

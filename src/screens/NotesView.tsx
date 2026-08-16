@@ -3,11 +3,13 @@ import { api, NoteInput, NoteMeta } from "../api";
 import { smartCopy } from "../lib/smartCopy";
 import { useDragReorder } from "../lib/useDragReorder";
 import { IconGrip, IconNote, IconPlus, IconTrash } from "../lib/icons";
+import { SearchBox, useSearch } from "../lib/useSearch";
 
 export function NotesView() {
   const [entries, setEntries] = useState<NoteMeta[]>([]);
   const [editing, setEditing] = useState<NoteMeta | "new" | null>(null);
-  const dragProps = useDragReorder("notes", entries, setEntries);
+  const { dragProps, handleProps } = useDragReorder("notes", entries, setEntries);
+  const { query, setQuery, filtered, searching } = useSearch(entries, (e) => [e.title]);
 
   async function refresh() {
     setEntries(await api.listNotes());
@@ -40,10 +42,13 @@ export function NotesView() {
     <div className="view">
       <div className="view-header">
         <h2>Secure Notes</h2>
-        <button onClick={() => setEditing("new")}>
-          <IconPlus size={15} />
-          Add
-        </button>
+        <div className="view-header-actions">
+          <SearchBox query={query} onChange={setQuery} />
+          <button onClick={() => setEditing("new")}>
+            <IconPlus size={15} />
+            Add
+          </button>
+        </div>
       </div>
       {entries.length === 0 && (
         <div className="empty-state">
@@ -52,8 +57,8 @@ export function NotesView() {
         </div>
       )}
       <ul className="entry-list">
-        {entries.map((e, index) => {
-          const drag = dragProps(index, e.id);
+        {filtered.map((e, index) => {
+          const drag = searching ? { className: "" } : dragProps(index, e.id);
           return (
             <li
               key={e.id}
@@ -61,9 +66,11 @@ export function NotesView() {
               className={`entry clickable ${drag.className}`}
               onClick={() => setEditing(e)}
             >
-              <span className="drag-handle" title="Drag to reorder">
-                <IconGrip size={14} />
-              </span>
+              {!searching && (
+                <span className="drag-handle" title="Drag to reorder" {...handleProps(e.id)}>
+                  <IconGrip size={14} />
+                </span>
+              )}
               <span className="entry-icon">
                 <IconNote size={17} />
               </span>

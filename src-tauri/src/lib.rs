@@ -81,6 +81,7 @@ pub fn run() {
             commands::profiles::delete_profile,
             commands::session::unlock,
             commands::session::lock,
+            commands::session::change_master_password,
             commands::session::current_profile,
             commands::entries::list_passwords,
             commands::entries::add_password,

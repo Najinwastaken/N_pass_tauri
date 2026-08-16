@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { api, Settings } from "../api";
 import { Theme } from "../lib/theme";
 import { ThemeSwitch } from "../lib/ThemeSwitch";
+import { StrengthMeter } from "../lib/strength";
 
 interface Props {
   theme: Theme;
@@ -74,13 +75,141 @@ export function SettingsView({ theme, onThemeChange }: Props) {
           </span>
         </label>
 
+        <label className="settings-row">
+          <div>
+            <div>Clear clipboard after copying</div>
+            <div className="muted small">0 = never clear automatically</div>
+          </div>
+          <div className="input-suffix">
+            <input
+              type="number"
+              min={0}
+              max={3600}
+              value={settings.clipboard_clear_seconds}
+              onChange={(e) =>
+                void save({
+                  ...settings,
+                  clipboard_clear_seconds: Math.max(0, Math.min(3600, Number(e.target.value) || 0)),
+                })
+              }
+            />
+            <span className="muted small">sec</span>
+          </div>
+        </label>
+
         <div className="settings-row" style={{ cursor: "default" }}>
           <div>Theme</div>
           <div style={{ width: 180 }}>
             <ThemeSwitch theme={theme} onChange={onThemeChange} />
           </div>
         </div>
+
+        <ChangePassword />
       </div>
+    </div>
+  );
+}
+
+/** Master password change: verify current, derive fresh salt+key, re-save. */
+function ChangePassword() {
+  const [open, setOpen] = useState(false);
+  const [current, setCurrent] = useState("");
+  const [next, setNext] = useState("");
+  const [repeat, setRepeat] = useState("");
+  const [error, setError] = useState("");
+  const [done, setDone] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [shake, setShake] = useState(0);
+
+  function fail(message: string) {
+    setError(message);
+    setShake((n) => n + 1);
+  }
+
+  function reset() {
+    setCurrent("");
+    setNext("");
+    setRepeat("");
+    setError("");
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!current) return fail("Enter the current password");
+    if (!next) return fail("Enter the new password");
+    if (next !== repeat) return fail("New passwords do not match");
+
+    setBusy(true);
+    setError("");
+    try {
+      await api.changeMasterPassword(current, next);
+      reset();
+      setOpen(false);
+      setDone(true);
+      setTimeout(() => setDone(false), 2500);
+    } catch (err) {
+      fail(String(err) === "wrong_password" ? "Current password is wrong" : String(err));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="settings-row settings-block" style={{ cursor: "default" }}>
+      <div className="settings-block-head">
+        <div>
+          <div>Master password</div>
+          <div className="muted small">
+            {done ? "Password changed ✓" : "Re-encrypts the vault with a fresh salt"}
+          </div>
+        </div>
+        <button
+          type="button"
+          className="secondary"
+          onClick={() => {
+            setOpen((v) => !v);
+            reset();
+          }}
+        >
+          {open ? "Cancel" : "Change…"}
+        </button>
+      </div>
+      {open && (
+        <form className="form change-password fade-in" onSubmit={handleSubmit}>
+          <label>
+            Current password
+            <input
+              autoFocus
+              type="password"
+              value={current}
+              onChange={(e) => setCurrent(e.target.value)}
+            />
+          </label>
+          <label>
+            New password
+            <input type="password" value={next} onChange={(e) => setNext(e.target.value)} />
+            <StrengthMeter password={next} />
+          </label>
+          <label>
+            Repeat new password
+            <input type="password" value={repeat} onChange={(e) => setRepeat(e.target.value)} />
+          </label>
+          <p className="warning">
+            ⚠ The master password cannot be recovered. If you forget the new
+            one, the data is lost.
+          </p>
+          {error && (
+            <p className="error shake" key={shake}>
+              {error}
+            </p>
+          )}
+          <div className="form-actions">
+            <button type="submit" disabled={busy}>
+              {busy ? "Re-encrypting…" : "Change password"}
+            </button>
+          </div>
+        </form>
+      )}
     </div>
   );
 }

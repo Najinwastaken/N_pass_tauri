@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { api, CardInput, CardMeta } from "../api";
-import { digitsOnly, expiryWholeValue, smartCopy } from "../lib/smartCopy";
+import { digitsOnly, expiryWholeValue, smartCopy, useClearCellSelection } from "../lib/smartCopy";
 import { useDragReorder } from "../lib/useDragReorder";
 import { Select } from "../lib/Select";
+import { Cell } from "../lib/Cell";
+import { SearchBox, useSearch } from "../lib/useSearch";
 import {
   IconCard,
   IconCopy,
@@ -46,7 +48,13 @@ export function CardsView() {
   const [entries, setEntries] = useState<CardMeta[]>([]);
   const [editing, setEditing] = useState<CardMeta | "new" | null>(null);
   const [revealed, setRevealed] = useState<Record<string, string>>({});
-  const dragProps = useDragReorder("cards", entries, setEntries);
+  const { dragProps, handleProps } = useDragReorder("cards", entries, setEntries);
+  useClearCellSelection();
+  const { query, setQuery, filtered, searching } = useSearch(entries, (e) => [
+    e.title,
+    e.provider,
+    e.cardholder,
+  ]);
 
   async function refresh() {
     setEntries(await api.listCards());
@@ -89,10 +97,13 @@ export function CardsView() {
     <div className="view">
       <div className="view-header">
         <h2>Credit Cards</h2>
-        <button onClick={() => setEditing("new")}>
-          <IconPlus size={15} />
-          Add
-        </button>
+        <div className="view-header-actions">
+          <SearchBox query={query} onChange={setQuery} />
+          <button onClick={() => setEditing("new")}>
+            <IconPlus size={15} />
+            Add
+          </button>
+        </div>
       </div>
       {entries.length === 0 && (
         <div className="empty-state">
@@ -101,23 +112,23 @@ export function CardsView() {
         </div>
       )}
       <ul className="entry-list">
-        {entries.map((e, index) => {
-          const drag = dragProps(index, e.id);
+        {filtered.map((e, index) => {
+          const drag = searching ? { className: "" } : dragProps(index, e.id);
           return (
             <li key={e.id} {...drag} className={`entry ${drag.className}`}>
-              <span className="drag-handle" title="Drag to reorder">
-                <IconGrip size={14} />
-              </span>
+              {!searching && (
+                <span className="drag-handle" title="Drag to reorder" {...handleProps(e.id)}>
+                  <IconGrip size={14} />
+                </span>
+              )}
               <span className="entry-icon">
                 <IconCard size={17} />
               </span>
-              <div className="entry-main">
-                <span className="entry-title">{e.title}</span>
-                <span className="entry-sub">
-                  {[e.provider, e.cardholder].filter(Boolean).join(" · ")}
-                </span>
-                <span className="entry-sub">{e.expiry}</span>
-              </div>
+              <Cell value={e.title} kind="title" />
+              <Cell value={e.provider} kind="provider" />
+              <Cell value={e.cardholder} kind="holder" />
+              {/* Cursor-position smart copy: before the slash = MM, after = YY */}
+              <Cell value={e.expiry} kind="expiry" wholeValue={expiryWholeValue} />
               <div className="entry-secret">
                 <code>{revealed[e.id] ?? `•••• ${e.last4}`}</code>
               </div>
