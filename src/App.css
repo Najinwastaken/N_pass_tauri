@@ -626,8 +626,22 @@ input.invalid {
   opacity: 0;
 }
 
-.profile-tile:hover .tile-delete {
+.tile-edit {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  opacity: 0;
+}
+
+.profile-tile:hover .tile-delete,
+.profile-tile:hover .tile-edit {
   opacity: 1;
+}
+
+.tile-rename {
+  font-size: 13px;
+  text-align: center;
+  padding: 5px 8px;
 }
 
 /* ---------- main layout / sidebar ---------- */

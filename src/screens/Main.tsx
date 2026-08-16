@@ -106,6 +106,19 @@ export function Main({ profile, onLocked }: Props) {
     onLocked();
   }
 
+  // Ctrl+L: instant lock (layout-independent via e.code).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.code === "KeyL") {
+        e.preventDefault();
+        void handleLock();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <div className="main-layout">
       <aside className="sidebar">

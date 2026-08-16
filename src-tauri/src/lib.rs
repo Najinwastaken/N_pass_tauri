@@ -78,6 +78,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             commands::profiles::list_profiles,
             commands::profiles::create_profile,
+            commands::profiles::rename_profile,
             commands::profiles::delete_profile,
             commands::session::unlock,
             commands::session::lock,

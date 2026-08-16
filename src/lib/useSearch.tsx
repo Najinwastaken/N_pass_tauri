@@ -7,11 +7,16 @@ import { IconSearch, IconX } from "./icons";
 
 export function useSearch<T>(items: T[], keysOf: (item: T) => string[]) {
   const [query, setQuery] = useState("");
-  const q = query.trim().toLowerCase();
-  const filtered = q
-    ? items.filter((item) => keysOf(item).some((s) => s.toLowerCase().includes(q)))
+  // Multi-word: every word must occur somewhere in the item's fields,
+  // in any order ("акк google" matches "Google account").
+  const words = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  const filtered = words.length
+    ? items.filter((item) => {
+        const haystack = keysOf(item).join("\n").toLowerCase();
+        return words.every((w) => haystack.includes(w));
+      })
     : items;
-  return { query, setQuery, filtered, searching: q.length > 0 };
+  return { query, setQuery, filtered, searching: words.length > 0 };
 }
 
 interface BoxProps {

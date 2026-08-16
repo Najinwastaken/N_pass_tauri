@@ -85,6 +85,61 @@ pub async fn create_profile(
     Ok(())
 }
 
+/// Rename a profile = rename its files. Only offered while locked, so no
+/// unlocked session state needs updating (guarded here anyway).
+///
+/// Windows filenames are case-insensitive, so the collision check compares
+/// lowercased stems — while still allowing a pure case change of the same
+/// profile ("misha" -> "Misha").
+#[tauri::command]
+pub fn rename_profile(
+    state: State<'_, AppState>,
+    old_name: String,
+    new_name: String,
+) -> Result<(), String> {
+    validate_name(&new_name)?;
+    let old_name = old_name.trim().to_string();
+    let new_name = new_name.trim().to_string();
+    if old_name == new_name {
+        return Ok(());
+    }
+    if state.vault.lock().expect("poisoned").is_some() {
+        return Err("busy".into());
+    }
+
+    let dir = state.vaults_dir();
+    let old_path = dir.join(format!("{old_name}.npass"));
+    if !old_path.exists() {
+        return Err("no_such_profile".into());
+    }
+
+    let taken = fs::read_dir(&dir)
+        .map_err(|e| format!("error: {e}"))?
+        .flatten()
+        .any(|entry| {
+            let path = entry.path();
+            path.extension().is_some_and(|ext| ext == "npass")
+                && path
+                    .file_stem()
+                    .and_then(|s| s.to_str())
+                    .is_some_and(|stem| {
+                        stem.to_lowercase() == new_name.to_lowercase()
+                            && stem.to_lowercase() != old_name.to_lowercase()
+                    })
+        });
+    if taken {
+        return Err("profile_exists".into());
+    }
+
+    fs::rename(&old_path, dir.join(format!("{new_name}.npass")))
+        .map_err(|e| format!("error: {e}"))?;
+    let old_bak = old_path.with_extension("npass.bak");
+    if old_bak.exists() {
+        let _ = fs::rename(&old_bak, dir.join(format!("{new_name}.npass.bak")));
+    }
+    Ok(())
+}
+
 /// Deletes the vault file AND its backup. The UI must confirm this with
 /// the user first — there is no undo.
 #[tauri::command]

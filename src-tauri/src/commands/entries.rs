@@ -383,22 +383,35 @@ pub fn delete_note(state: State<'_, AppState>, id: Uuid) -> Result<(), String> {
     })
 }
 
+/// Multi-word match: every query word must occur somewhere in `haystack`
+/// (already lowercased), in any order.
+fn matches_all_words(haystack: &str, words: &[String]) -> bool {
+    words.iter().all(|w| haystack.contains(w.as_str()))
+}
+
 /// Full-text note search, executed entirely on the Rust side where the
 /// decrypted bodies already live. Only ids/titles of matching notes are
 /// returned — bodies never reach the WebView in bulk. Case-insensitive
-/// including non-ASCII (both sides lowercased).
+/// including non-ASCII (both sides lowercased), multi-word in any order.
 #[tauri::command]
 pub fn search_notes(state: State<'_, AppState>, query: String) -> Result<Vec<NoteMeta>, String> {
-    let q = query.trim().to_lowercase();
+    let words: Vec<String> = query
+        .trim()
+        .to_lowercase()
+        .split_whitespace()
+        .map(String::from)
+        .collect();
     with_vault(&state, |vault| {
         Ok(vault
             .data
             .notes
             .iter()
             .filter(|e| {
-                q.is_empty()
-                    || e.title.to_lowercase().contains(&q)
-                    || e.body.to_lowercase().contains(&q)
+                words.is_empty() || {
+                    let haystack =
+                        format!("{}\n{}", e.title.to_lowercase(), e.body.to_lowercase());
+                    matches_all_words(&haystack, &words)
+                }
             })
             .map(|e| NoteMeta {
                 id: e.id,
@@ -518,6 +531,56 @@ pub fn reveal_key(state: State<'_, AppState>, id: Uuid) -> Result<String, String
             .map(|e| e.key.clone())
             .ok_or_else(|| "not_found".to_string())
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[derive(Debug, PartialEq)]
+    struct Item(Uuid);
+
+    fn ids(n: usize) -> Vec<Uuid> {
+        (0..n).map(|_| Uuid::new_v4()).collect()
+    }
+
+    #[test]
+    fn apply_order_reorders_to_given_sequence() {
+        let id = ids(3);
+        let mut items = vec![Item(id[0]), Item(id[1]), Item(id[2])];
+        apply_order(&mut items, &[id[2], id[0], id[1]], |i| i.0);
+        assert_eq!(
+            items.iter().map(|i| i.0).collect::<Vec<_>>(),
+            vec![id[2], id[0], id[1]]
+        );
+    }
+
+    #[test]
+    fn apply_order_ignores_unknown_ids_and_keeps_missing_at_end() {
+        let id = ids(3);
+        let stranger = Uuid::new_v4();
+        let mut items = vec![Item(id[0]), Item(id[1]), Item(id[2])];
+        // Order mentions a stranger and omits id[0] and id[1]: id[2] goes
+        // first, the omitted keep their relative order at the end.
+        apply_order(&mut items, &[stranger, id[2]], |i| i.0);
+        assert_eq!(
+            items.iter().map(|i| i.0).collect::<Vec<_>>(),
+            vec![id[2], id[0], id[1]]
+        );
+    }
+
+    #[test]
+    fn matches_all_words_any_order_and_cyrillic() {
+        let hay = "рецепт борща\nлук, томаты и Свёкла".to_lowercase();
+        let words = |s: &str| -> Vec<String> {
+            s.to_lowercase().split_whitespace().map(String::from).collect()
+        };
+        assert!(matches_all_words(&hay, &words("лук рецепт")));
+        assert!(matches_all_words(&hay, &words("СВЁКЛА")));
+        assert!(matches_all_words(&hay, &words("томаты лук борщ")));
+        assert!(!matches_all_words(&hay, &words("лук картофель")));
+        assert!(matches_all_words(&hay, &[]));
+    }
 }
 
 // ------------------------------------------------------------------ reorder

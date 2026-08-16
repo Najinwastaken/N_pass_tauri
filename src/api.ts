@@ -82,6 +82,8 @@ export const api = {
   listProfiles: () => invoke<string[]>("list_profiles"),
   createProfile: (name: string, password: string) =>
     invoke<void>("create_profile", { name, password }),
+  renameProfile: (oldName: string, newName: string) =>
+    invoke<void>("rename_profile", { oldName, newName }),
   deleteProfile: (name: string) => invoke<void>("delete_profile", { name }),
 
   unlock: (name: string, password: string) =>
