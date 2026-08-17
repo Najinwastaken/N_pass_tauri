@@ -90,6 +90,43 @@ impl Default for AppState {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::crypto::KdfParams;
+
+    #[test]
+    fn backup_copies_identical_encrypted_file() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("T.npass");
+        let params = KdfParams {
+            m_cost: 8 * 1024,
+            t_cost: 1,
+            p_cost: 1,
+        };
+        crate::vault::create(&path, "pw", &VaultData::default(), params).unwrap();
+        let (data, key, header) = crate::vault::load(&path, "pw").unwrap();
+        let unlocked = UnlockedVault {
+            profile: "T".into(),
+            path: path.clone(),
+            key,
+            salt: header.salt,
+            kdf_params: header.kdf_params,
+            data,
+        };
+
+        // Target dir does not exist yet — backup_to must create it.
+        let backup_dir = dir.path().join("bak");
+        unlocked.backup_to(backup_dir.to_str().unwrap()).unwrap();
+
+        assert_eq!(
+            std::fs::read(&path).unwrap(),
+            std::fs::read(backup_dir.join("T.npass")).unwrap(),
+            "backup must be a byte-identical copy of the encrypted vault"
+        );
+    }
+}
+
 impl AppState {
     pub fn vaults_dir(&self) -> PathBuf {
         self.vaults_dir.lock().expect("poisoned").clone()
