@@ -137,7 +137,11 @@ function NoteForm({
 }) {
   const [form, setForm] = useState<NoteInput>({ title: "", body: "" });
   const [shake, setShake] = useState(0);
+  const [missing, setMissing] = useState<string[]>([]);
   const [loaded, setLoaded] = useState(initial === null);
+
+  const invalid = (field: string, empty: boolean) =>
+    shake > 0 && missing.includes(field) && empty ? "shake invalid" : "";
 
   // The body is a secret: fetched only when the note is opened.
   useEffect(() => {
@@ -151,7 +155,11 @@ function NoteForm({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.title.trim()) {
+    const miss: string[] = [];
+    if (!form.title.trim()) miss.push("title");
+    if (!form.body.trim()) miss.push("body");
+    if (miss.length > 0) {
+      setMissing(miss);
       setShake((n) => n + 1);
       return;
     }
@@ -172,16 +180,18 @@ function NoteForm({
           Title *
           <input
             autoFocus
-            key={shake}
-            className={shake > 0 && !form.title.trim() ? "shake invalid" : ""}
+            key={`t${shake}`}
+            className={invalid("title", !form.title.trim())}
             value={form.title}
             onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
             onKeyDown={smartCopy()}
           />
         </label>
         <label>
-          Note
+          Note *
           <textarea
+            key={`b${shake}`}
+            className={invalid("body", !form.body.trim())}
             value={form.body}
             onChange={(e) => setForm((f) => ({ ...f, body: e.target.value }))}
             rows={12}

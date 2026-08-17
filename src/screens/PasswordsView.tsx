@@ -182,8 +182,13 @@ function EntryForm({
   const [form, setForm] = useState<PasswordInput>(EMPTY);
   const [showPw, setShowPw] = useState(false);
   const [shake, setShake] = useState(0);
+  const [missing, setMissing] = useState<string[]>([]);
   const [loaded, setLoaded] = useState(initial === null);
   const { menu, openMenu } = useContextMenu();
+
+  /** All empty required fields shake together. */
+  const invalid = (field: string, empty: boolean) =>
+    shake > 0 && missing.includes(field) && empty ? "shake invalid" : "";
 
   // Editing an existing entry: fetch its password once so saving does not
   // silently blank it.
@@ -204,7 +209,11 @@ function EntryForm({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.title.trim()) {
+    const miss: string[] = [];
+    if (!form.title.trim()) miss.push("title");
+    if (!form.password) miss.push("password");
+    if (miss.length > 0) {
+      setMissing(miss);
       setShake((n) => n + 1);
       return;
     }
@@ -228,8 +237,8 @@ function EntryForm({
           Title *
           <input
             autoFocus
-            key={shake}
-            className={shake > 0 && !form.title.trim() ? "shake invalid" : ""}
+            key={`t${shake}`}
+            className={invalid("title", !form.title.trim())}
             value={form.title}
             onChange={set("title")}
             onKeyDown={smartCopy()}
@@ -240,9 +249,11 @@ function EntryForm({
           <input value={form.username} onChange={set("username")} onKeyDown={smartCopy()} />
         </label>
         <label>
-          Password
+          Password *
           <div className="input-row">
             <input
+              key={`p${shake}`}
+              className={invalid("password", !form.password)}
               type={showPw ? "text" : "password"}
               value={form.password}
               onChange={set("password")}

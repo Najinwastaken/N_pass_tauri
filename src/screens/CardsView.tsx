@@ -181,7 +181,11 @@ function CardForm({
   const [form, setForm] = useState<CardInput>(EMPTY);
   const [showCvv, setShowCvv] = useState(false);
   const [shake, setShake] = useState(0);
+  const [missing, setMissing] = useState<string[]>([]);
   const [loaded, setLoaded] = useState(initial === null);
+
+  const invalid = (field: string, empty: boolean) =>
+    shake > 0 && missing.includes(field) && empty ? "shake invalid" : "";
 
   useEffect(() => {
     if (!initial) return;
@@ -205,7 +209,11 @@ function CardForm({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.title.trim()) {
+    const miss: string[] = [];
+    if (!form.title.trim()) miss.push("title");
+    if (!form.number) miss.push("number");
+    if (miss.length > 0) {
+      setMissing(miss);
       setShake((n) => n + 1);
       return;
     }
@@ -247,8 +255,8 @@ function CardForm({
           Title *
           <input
             autoFocus
-            key={shake}
-            className={shake > 0 && !form.title.trim() ? "shake invalid" : ""}
+            key={`t${shake}`}
+            className={invalid("title", !form.title.trim())}
             value={form.title}
             onChange={set("title")}
             onKeyDown={smartCopy()}
@@ -272,9 +280,11 @@ function CardForm({
           </label>
         </div>
         <label>
-          Card number
+          Card number *
           {/* Smart Ctrl+C with no selection copies digits only, no dashes */}
           <input
+            key={`n${shake}`}
+            className={invalid("number", !form.number)}
             inputMode="numeric"
             value={formatCardNumber(form.number)}
             onChange={setNumber}

@@ -140,7 +140,11 @@ function KeyForm({
   const [form, setForm] = useState<KeyInput>(EMPTY);
   const [showKey, setShowKey] = useState(false);
   const [shake, setShake] = useState(0);
+  const [missing, setMissing] = useState<string[]>([]);
   const [loaded, setLoaded] = useState(initial === null);
+
+  const invalid = (field: string, empty: boolean) =>
+    shake > 0 && missing.includes(field) && empty ? "shake invalid" : "";
 
   useEffect(() => {
     if (!initial) return;
@@ -153,7 +157,11 @@ function KeyForm({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.title.trim()) {
+    const miss: string[] = [];
+    if (!form.title.trim()) miss.push("title");
+    if (!form.key) miss.push("key");
+    if (miss.length > 0) {
+      setMissing(miss);
       setShake((n) => n + 1);
       return;
     }
@@ -174,17 +182,19 @@ function KeyForm({
           Title *
           <input
             autoFocus
-            key={shake}
-            className={shake > 0 && !form.title.trim() ? "shake invalid" : ""}
+            key={`t${shake}`}
+            className={invalid("title", !form.title.trim())}
             value={form.title}
             onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
             onKeyDown={smartCopy()}
           />
         </label>
         <label>
-          Key
+          Key *
           <div className="input-row">
             <input
+              key={`k${shake}`}
+              className={invalid("key", !form.key)}
               type={showKey ? "text" : "password"}
               value={form.key}
               onChange={(e) => setForm((f) => ({ ...f, key: e.target.value }))}
