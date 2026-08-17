@@ -47,7 +47,7 @@ export function Cell({ value, kind, wholeValue, onContextMenu }: Props) {
       const rect = el.getBoundingClientRect();
       setTip({
         x: Math.max(8, Math.min(rect.left, window.innerWidth - TIP_MAX_WIDTH - 8)),
-        y: rect.bottom + 6,
+        y: rect.top - 6, // anchored above the cell (CSS shifts by -100%)
       });
     }, TIP_DELAY_MS);
   }
@@ -75,7 +75,7 @@ export function Cell({ value, kind, wholeValue, onContextMenu }: Props) {
         </button>
       )}
       {tip && (
-        <div className="cell-tip fade-in" style={{ left: tip.x, top: tip.y }}>
+        <div className="cell-tip" style={{ left: tip.x, top: tip.y }}>
           {value}
         </div>
       )}
