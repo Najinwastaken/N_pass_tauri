@@ -1398,6 +1398,14 @@ button.cell-copy svg {
   transition: border-color 0.15s;
 }
 
+/* backdrop-filter gives every row its own stacking context, so a dropdown
+   inside one row would paint UNDER the following rows. While a select
+   menu is open, lift its row above the siblings. */
+.settings-row:has(.select-menu) {
+  position: relative;
+  z-index: 60;
+}
+
 .settings-row:hover {
   border-color: var(--border-strong);
 }
