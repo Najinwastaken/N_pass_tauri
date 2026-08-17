@@ -68,6 +68,7 @@ pub fn run() {
             }
 
             *app.state::<AppState>().vaults_dir.lock().expect("poisoned") = dir;
+            *app.state::<AppState>().app.lock().expect("poisoned") = Some(app.handle().clone());
 
             // Auto-lock by inactivity: a background thread compares idle
             // time against the unlocked vault's own settings.

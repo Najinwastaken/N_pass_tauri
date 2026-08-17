@@ -10,6 +10,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Mutex;
 use std::time::Instant;
 
+use tauri::{AppHandle, Emitter};
 use zeroize::{Zeroize, Zeroizing};
 
 use crate::crypto::{KdfParams, KEY_LEN, SALT_LEN};
@@ -31,16 +32,17 @@ pub struct UnlockedVault {
 impl UnlockedVault {
     /// Persist current `data` to disk (fresh nonce, atomic write, backup).
     /// If configured, best-effort copy the encrypted file into the user's
-    /// backup folder afterwards — a backup failure must not fail the save.
-    pub fn save(&self) -> Result<(), VaultError> {
+    /// backup folder afterwards — a backup failure must not fail the save,
+    /// so it is RETURNED (Ok(Some(message))) for the caller to surface.
+    pub fn save(&self) -> Result<Option<String>, VaultError> {
         vault::save(&self.path, &self.data, &self.key, &self.salt, &self.kdf_params)?;
         if self.data.settings.backup_on_save {
             let dir = self.data.settings.backup_dir.trim();
             if !dir.is_empty() {
-                let _ = self.backup_to(dir);
+                return Ok(self.backup_to(dir).err().map(|e| e.to_string()));
             }
         }
-        Ok(())
+        Ok(None)
     }
 
     /// Copy the (encrypted, self-contained) vault file into `dir`.
@@ -77,6 +79,10 @@ pub struct AppState {
     /// `AtomicU64` allows lock-free reads/writes from multiple threads —
     /// enough for a counter, no Mutex needed.
     pub clipboard_gen: AtomicU64,
+    /// Handle for emitting events to the UI (set once at startup).
+    pub app: Mutex<Option<AppHandle>>,
+    /// Last backup error we already told the UI about — dedupes toasts.
+    pub last_backup_error: Mutex<Option<String>>,
 }
 
 impl Default for AppState {
@@ -86,6 +92,8 @@ impl Default for AppState {
             vaults_dir: Mutex::new(PathBuf::new()),
             last_activity: Mutex::new(Instant::now()),
             clipboard_gen: AtomicU64::new(0),
+            app: Mutex::new(None),
+            last_backup_error: Mutex::new(None),
         }
     }
 }
@@ -148,5 +156,23 @@ impl AppState {
 
     pub fn current_clipboard_gen(&self) -> u64 {
         self.clipboard_gen.load(Ordering::SeqCst)
+    }
+
+    /// Surface a background backup outcome to the UI. Each distinct error
+    /// is emitted once ("backup-failed" event -> styled toast); a success
+    /// resets the dedupe so the next failure is reported again.
+    pub fn report_backup_result(&self, error: Option<String>) {
+        let mut last = self.last_backup_error.lock().expect("poisoned");
+        match error {
+            None => *last = None,
+            Some(message) => {
+                if last.as_deref() != Some(message.as_str()) {
+                    *last = Some(message.clone());
+                    if let Some(app) = self.app.lock().expect("poisoned").as_ref() {
+                        let _ = app.emit("backup-failed", message);
+                    }
+                }
+            }
+        }
     }
 }

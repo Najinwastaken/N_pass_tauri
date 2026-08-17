@@ -30,15 +30,18 @@ fn with_vault<T>(
 
 /// Mutate the vault data, then immediately persist to disk. If the save
 /// fails the in-memory change is kept, but the caller gets the error.
+/// A failed best-effort backup copy is surfaced to the UI as a toast.
 fn mutate<T>(
     state: &State<'_, AppState>,
     f: impl FnOnce(&mut UnlockedVault) -> Result<T, String>,
 ) -> Result<T, String> {
-    with_vault(state, |vault| {
+    let (result, backup_error) = with_vault(state, |vault| {
         let result = f(vault)?;
-        vault.save().map_err(err_code)?;
-        Ok(result)
-    })
+        let backup_error = vault.save().map_err(err_code)?;
+        Ok((result, backup_error))
+    })?;
+    state.report_backup_result(backup_error);
+    Ok(result)
 }
 
 /// Reorder a list to match `ordered_ids` (the frontend sends the full id

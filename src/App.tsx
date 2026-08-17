@@ -3,6 +3,7 @@ import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { api } from "./api";
 import { applyTheme, cachedTheme } from "./lib/theme";
+import { IconX } from "./lib/icons";
 import { Titlebar } from "./Titlebar";
 import { ProfileSelect } from "./screens/ProfileSelect";
 import { CreateProfile } from "./screens/CreateProfile";
@@ -41,6 +42,23 @@ export default function App() {
   const [screen, setScreen] = useState<Screen>({ kind: "loading" });
   const [profiles, setProfiles] = useState<string[]>([]);
   const maximized = useMaximized();
+  const [toast, setToast] = useState<string | null>(null);
+
+  // Background backup failures arrive from Rust as an event → styled toast.
+  useEffect(() => {
+    const unlisten = listen<string>("backup-failed", (e) => {
+      setToast(`Backup failed — ${e.payload}`);
+    });
+    return () => {
+      void unlisten.then((f) => f());
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(null), 8000);
+    return () => clearTimeout(timer);
+  }, [toast]);
 
   async function goToStart() {
     const list = await api.listProfiles();
@@ -113,6 +131,14 @@ export default function App() {
       <div className="app-content fade-in" key={screen.kind}>
         {content}
       </div>
+      {toast && (
+        <div className="toast fade-in" role="alert">
+          <span className="toast-text">{toast}</span>
+          <button className="icon" title="Dismiss" onClick={() => setToast(null)}>
+            <IconX size={14} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }

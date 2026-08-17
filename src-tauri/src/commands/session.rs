@@ -83,7 +83,9 @@ pub async fn change_master_password(
     vault.salt = new_salt;
     vault.kdf_params = new_params;
     vault.key = new_key;
-    vault.save().map_err(err_code)?;
+    let backup_error = vault.save().map_err(err_code)?;
+    drop(guard);
+    state.report_backup_result(backup_error);
     state.touch();
     Ok(())
 }

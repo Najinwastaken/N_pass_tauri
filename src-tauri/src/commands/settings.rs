@@ -27,7 +27,10 @@ pub fn update_settings(state: State<'_, AppState>, settings: Settings) -> Result
         clipboard_clear_seconds: settings.clipboard_clear_seconds.min(3600),
         ..settings
     };
-    vault.save().map_err(err_code)
+    let backup_error = vault.save().map_err(err_code)?;
+    drop(guard);
+    state.report_backup_result(backup_error);
+    Ok(())
 }
 
 /// Native folder picker for the backup destination. Runs on the async
@@ -51,5 +54,9 @@ pub fn backup_now(state: State<'_, AppState>) -> Result<(), String> {
     if dir.is_empty() {
         return Err("no_backup_dir".into());
     }
-    vault.backup_to(&dir).map_err(|e| format!("error: {e}"))
+    let result = vault.backup_to(&dir).map_err(|e| format!("error: {e}"));
+    drop(guard);
+    // Success resets the toast dedupe; failure also raises the toast.
+    state.report_backup_result(result.as_ref().err().cloned());
+    result
 }
