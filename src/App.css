@@ -869,10 +869,10 @@ textarea.invalid {
   min-width: 0;
 }
 
-/* Content is pinned to the left edge of the pane; max-widths only stop
-   lines from growing absurdly long. */
+/* List views stretch with the window — the columns are flex fractions
+   and redistribute automatically. Only forms stay a narrow column. */
 .view {
-  max-width: 1060px;
+  max-width: none;
 }
 
 /* Forms and settings: narrow column, header lines up with the fields. */
