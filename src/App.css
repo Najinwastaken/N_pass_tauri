@@ -1101,6 +1101,8 @@ textarea.invalid {
 .cell-title input {
   font-weight: 600;
   font-size: 14.5px;
+  /* Half a notch dimmer than the primary text, still the row's anchor. */
+  color: color-mix(in srgb, var(--text) 80%, var(--text-muted));
 }
 
 .cell-user input,
