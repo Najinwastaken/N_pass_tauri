@@ -4,6 +4,7 @@
 
 import { useState } from "react";
 import { api } from "../api";
+import { t } from "./i18n";
 import { smartCopy } from "./smartCopy";
 import { IconCheck, IconCopy } from "./icons";
 
@@ -37,7 +38,7 @@ export function Cell({ value, kind, wholeValue, onContextMenu }: Props) {
       {value && (
         <button
           className={`icon cell-copy ${copied ? "copied" : ""}`}
-          title="Copy"
+          title={t("copy")}
           tabIndex={-1}
           onClick={() => void handleCopy()}
         >

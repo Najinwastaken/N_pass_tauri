@@ -75,6 +75,7 @@ export interface Settings {
   backup_dir: string;
   backup_on_save: boolean;
   theme: string;
+  language: string;
 }
 
 export type EntryKind = "passwords" | "cards" | "notes" | "keys";

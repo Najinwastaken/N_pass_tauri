@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { api } from "../api";
+import { t } from "../lib/i18n";
 
 interface Props {
   profile: string;
@@ -40,17 +41,17 @@ export function Unlock({ profile, onUnlocked, onBack }: Props) {
           className={shake > 0 ? "shake" : ""}
           type="password"
           autoFocus
-          placeholder="Master password"
+          placeholder={t("masterPassword")}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
         {error && <p className="error">{error}</p>}
         <div className="form-actions">
           <button type="button" className="secondary" onClick={onBack} disabled={busy}>
-            Back
+            {t("back")}
           </button>
           <button type="submit" disabled={busy || !password}>
-            {busy ? "Unlocking…" : "Unlock"}
+            {busy ? t("unlocking") : t("unlockBtn")}
           </button>
         </div>
       </form>

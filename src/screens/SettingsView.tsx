@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { api, Settings } from "../api";
 import { Theme } from "../lib/theme";
+import { applyLang, currentLang, isLang, t, LANGUAGES } from "../lib/i18n";
 import { ThemeSwitch } from "../lib/ThemeSwitch";
+import { Select } from "../lib/Select";
 import { StrengthMeter } from "../lib/strength";
 
 interface Props {
@@ -30,21 +32,27 @@ export function SettingsView({ theme, onThemeChange }: Props) {
     setSaved((n) => n + 1);
   }
 
+  function changeLanguage(lang: string) {
+    if (!isLang(lang)) return;
+    applyLang(lang);
+    void save({ ...settings!, language: lang });
+  }
+
   return (
     <div className="view narrow">
       <div className="view-header">
-        <h2>Settings</h2>
+        <h2>{t("settings")}</h2>
         {saved > 0 && (
           <span className="muted small fade-out" key={saved}>
-            Saved
+            {t("saved")}
           </span>
         )}
       </div>
       <div className="settings">
         <label className="settings-row">
           <div>
-            <div>Auto-lock after inactivity</div>
-            <div className="muted small">0 = never lock automatically</div>
+            <div>{t("autoLock")}</div>
+            <div className="muted small">{t("autoLockHint")}</div>
           </div>
           <div className="input-suffix">
             <input
@@ -59,12 +67,12 @@ export function SettingsView({ theme, onThemeChange }: Props) {
                 })
               }
             />
-            <span className="muted small">min</span>
+            <span className="muted small">{t("min")}</span>
           </div>
         </label>
 
         <label className="settings-row">
-          <div>Lock when window is minimized</div>
+          <div>{t("lockOnMinimize")}</div>
           <span className="switch">
             <input
               type="checkbox"
@@ -77,8 +85,8 @@ export function SettingsView({ theme, onThemeChange }: Props) {
 
         <label className="settings-row">
           <div>
-            <div>Clear clipboard after copying</div>
-            <div className="muted small">0 = never clear automatically</div>
+            <div>{t("clipboardClear")}</div>
+            <div className="muted small">{t("clipboardClearHint")}</div>
           </div>
           <div className="input-suffix">
             <input
@@ -93,14 +101,25 @@ export function SettingsView({ theme, onThemeChange }: Props) {
                 })
               }
             />
-            <span className="muted small">sec</span>
+            <span className="muted small">{t("sec")}</span>
           </div>
         </label>
 
         <div className="settings-row" style={{ cursor: "default" }}>
-          <div>Theme</div>
+          <div>{t("theme")}</div>
           <div style={{ width: 180 }}>
             <ThemeSwitch theme={theme} onChange={onThemeChange} />
+          </div>
+        </div>
+
+        <div className="settings-row" style={{ cursor: "default" }}>
+          <div>{t("language")}</div>
+          <div style={{ width: 180 }}>
+            <Select
+              value={currentLang()}
+              onChange={changeLanguage}
+              options={LANGUAGES.map((l) => ({ value: l.value, label: l.label }))}
+            />
           </div>
         </div>
 
@@ -144,21 +163,23 @@ function BackupSection({
     <div className="settings-row settings-block" style={{ cursor: "default" }}>
       <div className="settings-block-head">
         <div style={{ minWidth: 0 }}>
-          <div>Backup folder</div>
+          <div>{t("backupFolder")}</div>
           <div className="muted small backup-path" title={settings.backup_dir}>
-            {hasDir
-              ? settings.backup_dir
-              : "Point it at a synced folder (Google Drive, Dropbox…) for cloud backup"}
+            {hasDir ? settings.backup_dir : t("backupHint")}
           </div>
         </div>
         <div className="input-suffix">
           {hasDir && (
             <button type="button" onClick={() => void backupNow()}>
-              {status === "done" ? "Copied ✓" : status === "error" ? "Failed ✗" : "Backup now"}
+              {status === "done"
+                ? t("backupDone")
+                : status === "error"
+                  ? t("backupFailedBtn")
+                  : t("backupNow")}
             </button>
           )}
           <button type="button" className="secondary" onClick={() => void choose()}>
-            {hasDir ? "Change…" : "Choose…"}
+            {hasDir ? t("change") : t("choose")}
           </button>
           {hasDir && (
             <button
@@ -166,14 +187,14 @@ function BackupSection({
               className="secondary"
               onClick={() => onSave({ ...settings, backup_dir: "", backup_on_save: false })}
             >
-              Clear
+              {t("clear")}
             </button>
           )}
         </div>
       </div>
       {hasDir && (
         <label className="settings-inline-row">
-          <span>Copy vault on every save</span>
+          <span>{t("copyOnSave")}</span>
           <span className="switch">
             <input
               type="checkbox"
@@ -213,9 +234,9 @@ function ChangePassword() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!current) return fail("Enter the current password");
-    if (!next) return fail("Enter the new password");
-    if (next !== repeat) return fail("New passwords do not match");
+    if (!current) return fail(t("errCurrentRequired"));
+    if (!next) return fail(t("errNewRequired"));
+    if (next !== repeat) return fail(t("errNewMismatch"));
 
     setBusy(true);
     setError("");
@@ -226,7 +247,7 @@ function ChangePassword() {
       setDone(true);
       setTimeout(() => setDone(false), 2500);
     } catch (err) {
-      fail(String(err) === "wrong_password" ? "Current password is wrong" : String(err));
+      fail(String(err) === "wrong_password" ? t("errWrongCurrent") : String(err));
     } finally {
       setBusy(false);
     }
@@ -236,9 +257,9 @@ function ChangePassword() {
     <div className="settings-row settings-block" style={{ cursor: "default" }}>
       <div className="settings-block-head">
         <div>
-          <div>Master password</div>
+          <div>{t("masterPassword")}</div>
           <div className="muted small">
-            {done ? "Password changed ✓" : "Re-encrypts the vault with a fresh salt"}
+            {done ? t("passwordChanged") : t("masterPasswordHint")}
           </div>
         </div>
         <button
@@ -249,13 +270,13 @@ function ChangePassword() {
             reset();
           }}
         >
-          {open ? "Cancel" : "Change…"}
+          {open ? t("cancel") : t("change")}
         </button>
       </div>
       {open && (
         <form className="form change-password fade-in" onSubmit={handleSubmit}>
           <label>
-            Current password
+            {t("currentPassword")}
             <input
               autoFocus
               type="password"
@@ -264,18 +285,15 @@ function ChangePassword() {
             />
           </label>
           <label>
-            New password
+            {t("newPassword")}
             <input type="password" value={next} onChange={(e) => setNext(e.target.value)} />
             <StrengthMeter password={next} />
           </label>
           <label>
-            Repeat new password
+            {t("repeatNewPassword")}
             <input type="password" value={repeat} onChange={(e) => setRepeat(e.target.value)} />
           </label>
-          <p className="warning">
-            ⚠ The master password cannot be recovered. If you forget the new
-            one, the data is lost.
-          </p>
+          <p className="warning">{t("changePwWarning")}</p>
           {error && (
             <p className="error shake" key={shake}>
               {error}
@@ -283,7 +301,7 @@ function ChangePassword() {
           )}
           <div className="form-actions">
             <button type="submit" disabled={busy}>
-              {busy ? "Re-encrypting…" : "Change password"}
+              {busy ? t("reencrypting") : t("changePasswordBtn")}
             </button>
           </div>
         </form>

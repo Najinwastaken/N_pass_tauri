@@ -18,6 +18,7 @@ import {
 } from "../lib/icons";
 import { Cell } from "../lib/Cell";
 import { SearchBox, useSearch } from "../lib/useSearch";
+import { t } from "../lib/i18n";
 
 const EMPTY: PasswordInput = {
   title: "",
@@ -61,7 +62,7 @@ export function PasswordsView() {
   }
 
   async function handleDelete(entry: PasswordMeta) {
-    if (!window.confirm(`Delete "${entry.title}"?`)) return;
+    if (!window.confirm(t("deleteEntryConfirm", { name: entry.title }))) return;
     await api.deletePassword(entry.id);
     await refresh();
   }
@@ -82,25 +83,25 @@ export function PasswordsView() {
   return (
     <div className="view">
       <div className="view-header">
-        <h2>Passwords</h2>
+        <h2>{t("navPasswords")}</h2>
         <div className="view-header-actions">
           <SearchBox query={query} onChange={setQuery} />
           <button onClick={() => setEditing("new")}>
             <IconPlus size={15} />
-            Add
+            {t("add")}
           </button>
         </div>
       </div>
       {entries.length === 0 && (
         <div className="empty-state">
           <IconShield size={36} />
-          <span>No passwords yet — add your first one.</span>
+          <span>{t("emptyPasswords")}</span>
         </div>
       )}
       {entries.length > 0 && filtered.length === 0 && (
         <div className="empty-state">
           <IconSearch size={36} />
-          <span>Nothing matches “{query}”.</span>
+          <span>{t("nothingMatches", { q: query })}</span>
         </div>
       )}
       <ul className="entry-list">
@@ -111,7 +112,7 @@ export function PasswordsView() {
           return (
             <li key={e.id} {...drag} className={`entry ${drag.className}`}>
               {!searching && (
-                <span className="drag-handle" title="Drag to reorder" {...handleProps(e.id)}>
+                <span className="drag-handle" title={t("dragToReorder")} {...handleProps(e.id)}>
                   <IconGrip size={14} />
                 </span>
               )}
@@ -126,8 +127,8 @@ export function PasswordsView() {
                 onContextMenu={(ev) =>
                   e.url &&
                   openMenu(ev, [
-                    { label: "Open URL", action: () => void api.openUrl(e.url) },
-                    { label: "Copy URL", action: () => void api.copyText(e.url) },
+                    { label: t("openUrl"), action: () => void api.openUrl(e.url) },
+                    { label: t("copyUrl"), action: () => void api.copyText(e.url) },
                   ])
                 }
               />
@@ -136,28 +137,28 @@ export function PasswordsView() {
               </div>
               <div className="entry-actions">
                 {e.url && (
-                  <button className="icon" title="Open URL" onClick={() => void api.openUrl(e.url)}>
+                  <button className="icon" title={t("openUrl")} onClick={() => void api.openUrl(e.url)}>
                     <IconExternal size={15} />
                   </button>
                 )}
                 <button
                   className="icon"
-                  title={revealed[e.id] !== undefined ? "Hide" : "Show"}
+                  title={revealed[e.id] !== undefined ? t("hide") : t("show")}
                   onClick={() => void toggleReveal(e.id)}
                 >
                   {revealed[e.id] !== undefined ? <IconEyeOff size={15} /> : <IconEye size={15} />}
                 </button>
                 <button
                   className="icon"
-                  title="Copy password"
+                  title={t("copyPassword")}
                   onClick={() => void api.copySecret("password", e.id)}
                 >
                   <IconCopy size={15} />
                 </button>
-                <button className="icon" title="Edit" onClick={() => setEditing(e)}>
+                <button className="icon" title={t("edit")} onClick={() => setEditing(e)}>
                   <IconPencil size={15} />
                 </button>
-                <button className="icon danger" title="Delete" onClick={() => void handleDelete(e)}>
+                <button className="icon danger" title={t("del")} onClick={() => void handleDelete(e)}>
                   <IconTrash size={15} />
                 </button>
               </div>
@@ -230,11 +231,11 @@ function EntryForm({
   return (
     <div className="view narrow">
       <div className="view-header">
-        <h2>{initial ? "Edit entry" : "New entry"}</h2>
+        <h2>{initial ? t("editEntry") : t("newEntry")}</h2>
       </div>
       <form className="form" onSubmit={handleSubmit}>
         <label>
-          Title *
+          {t("fTitle")} *
           <input
             autoFocus
             key={`t${shake}`}
@@ -245,11 +246,11 @@ function EntryForm({
           />
         </label>
         <label>
-          Username
+          {t("fUsername")}
           <input value={form.username} onChange={set("username")} onKeyDown={smartCopy()} />
         </label>
         <label>
-          Password *
+          {t("fPassword")} *
           <div className="input-row">
             <input
               key={`p${shake}`}
@@ -262,7 +263,7 @@ function EntryForm({
             <button
               type="button"
               className="icon"
-              title={showPw ? "Hide" : "Show"}
+              title={showPw ? t("hide") : t("show")}
               onClick={() => setShowPw((v) => !v)}
             >
               {showPw ? <IconEyeOff size={16} /> : <IconEye size={16} />}
@@ -271,7 +272,7 @@ function EntryForm({
           <StrengthMeter password={form.password} />
         </label>
         <label>
-          URL
+          {t("fUrl")}
           <input
             value={form.url}
             onChange={set("url")}
@@ -280,21 +281,21 @@ function EntryForm({
             onContextMenu={(e) =>
               form.url &&
               openMenu(e, [
-                { label: "Open URL", action: () => void api.openUrl(form.url) },
-                { label: "Copy URL", action: () => void api.copyText(form.url) },
+                { label: t("openUrl"), action: () => void api.openUrl(form.url) },
+                { label: t("copyUrl"), action: () => void api.copyText(form.url) },
               ])
             }
           />
         </label>
         <label>
-          Notes
+          {t("fNotes")}
           <textarea value={form.notes} onChange={set("notes")} rows={3} onKeyDown={smartCopy()} />
         </label>
         <div className="form-actions">
           <button type="button" className="secondary" onClick={onCancel}>
-            Cancel
+            {t("cancel")}
           </button>
-          <button type="submit">Save</button>
+          <button type="submit">{t("save")}</button>
         </div>
       </form>
       {menu}

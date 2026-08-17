@@ -5,6 +5,7 @@ import { useDragReorder } from "../lib/useDragReorder";
 import { Select } from "../lib/Select";
 import { Cell } from "../lib/Cell";
 import { SearchBox, useSearch } from "../lib/useSearch";
+import { t } from "../lib/i18n";
 import {
   IconCard,
   IconCopy,
@@ -75,7 +76,7 @@ export function CardsView() {
   }
 
   async function handleDelete(entry: CardMeta) {
-    if (!window.confirm(`Delete "${entry.title}"?`)) return;
+    if (!window.confirm(t("deleteEntryConfirm", { name: entry.title }))) return;
     await api.deleteCard(entry.id);
     await refresh();
   }
@@ -96,19 +97,19 @@ export function CardsView() {
   return (
     <div className="view">
       <div className="view-header">
-        <h2>Credit Cards</h2>
+        <h2>{t("navCards")}</h2>
         <div className="view-header-actions">
           <SearchBox query={query} onChange={setQuery} />
           <button onClick={() => setEditing("new")}>
             <IconPlus size={15} />
-            Add
+            {t("add")}
           </button>
         </div>
       </div>
       {entries.length === 0 && (
         <div className="empty-state">
           <IconCard size={36} />
-          <span>No cards yet.</span>
+          <span>{t("emptyCards")}</span>
         </div>
       )}
       <ul className="entry-list">
@@ -117,7 +118,7 @@ export function CardsView() {
           return (
             <li key={e.id} {...drag} className={`entry ${drag.className}`}>
               {!searching && (
-                <span className="drag-handle" title="Drag to reorder" {...handleProps(e.id)}>
+                <span className="drag-handle" title={t("dragToReorder")} {...handleProps(e.id)}>
                   <IconGrip size={14} />
                 </span>
               )}
@@ -135,29 +136,29 @@ export function CardsView() {
               <div className="entry-actions">
                 <button
                   className="icon"
-                  title={revealed[e.id] !== undefined ? "Hide number" : "Show number"}
+                  title={revealed[e.id] !== undefined ? t("hideNumber") : t("showNumber")}
                   onClick={() => void toggleRevealNumber(e.id)}
                 >
                   {revealed[e.id] !== undefined ? <IconEyeOff size={15} /> : <IconEye size={15} />}
                 </button>
                 <button
                   className="icon"
-                  title="Copy number (no dashes)"
+                  title={t("copyNumber")}
                   onClick={() => void api.copySecret("card_number", e.id)}
                 >
                   <IconCopy size={15} />
                 </button>
                 <button
                   className="icon"
-                  title="Copy CVV"
+                  title={t("copyCvv")}
                   onClick={() => void api.copySecret("card_cvv", e.id)}
                 >
                   CVV
                 </button>
-                <button className="icon" title="Edit" onClick={() => setEditing(e)}>
+                <button className="icon" title={t("edit")} onClick={() => setEditing(e)}>
                   <IconPencil size={15} />
                 </button>
-                <button className="icon danger" title="Delete" onClick={() => void handleDelete(e)}>
+                <button className="icon danger" title={t("del")} onClick={() => void handleDelete(e)}>
                   <IconTrash size={15} />
                 </button>
               </div>
@@ -248,11 +249,11 @@ function CardForm({
   return (
     <div className="view narrow">
       <div className="view-header">
-        <h2>{initial ? "Edit card" : "New card"}</h2>
+        <h2>{initial ? t("editCard") : t("newCard")}</h2>
       </div>
       <form className="form" onSubmit={handleSubmit}>
         <label>
-          Title *
+          {t("fTitle")} *
           <input
             autoFocus
             key={`t${shake}`}
@@ -264,7 +265,7 @@ function CardForm({
         </label>
         <div className="form-row">
           <label>
-            Payment provider
+            {t("fProvider")}
             <Select
               value={form.provider}
               onChange={(provider) => setForm((f) => ({ ...f, provider }))}
@@ -275,12 +276,12 @@ function CardForm({
             />
           </label>
           <label>
-            Cardholder
+            {t("fCardholder")}
             <input value={form.cardholder} onChange={set("cardholder")} onKeyDown={smartCopy()} />
           </label>
         </div>
         <label>
-          Card number *
+          {t("fCardNumber")} *
           {/* Smart Ctrl+C with no selection copies digits only, no dashes */}
           <input
             key={`n${shake}`}
@@ -294,7 +295,7 @@ function CardForm({
         </label>
         <div className="form-row">
           <label>
-            Expiry (MM/YY)
+            {t("fExpiry")}
             {/* Ctrl+C copies month or year depending on cursor position */}
             <input
               inputMode="numeric"
@@ -320,7 +321,7 @@ function CardForm({
               <button
                 type="button"
                 className="icon"
-                title={showCvv ? "Hide" : "Show"}
+                title={showCvv ? t("hide") : t("show")}
                 onClick={() => setShowCvv((v) => !v)}
               >
                 {showCvv ? <IconEyeOff size={16} /> : <IconEye size={16} />}
@@ -329,14 +330,14 @@ function CardForm({
           </label>
         </div>
         <label>
-          Notes
+          {t("fNotes")}
           <textarea value={form.notes} onChange={set("notes")} rows={3} onKeyDown={smartCopy()} />
         </label>
         <div className="form-actions">
           <button type="button" className="secondary" onClick={onCancel}>
-            Cancel
+            {t("cancel")}
           </button>
-          <button type="submit">Save</button>
+          <button type="submit">{t("save")}</button>
         </div>
       </form>
     </div>

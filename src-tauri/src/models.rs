@@ -83,6 +83,13 @@ pub struct Settings {
     /// "dark" | "light"
     #[serde(default = "default_theme")]
     pub theme: String,
+    /// UI language: "en" | "ru" | "uk"
+    #[serde(default = "default_language")]
+    pub language: String,
+}
+
+fn default_language() -> String {
+    "en".to_string()
 }
 
 fn default_auto_lock_minutes() -> u32 {
@@ -106,6 +113,7 @@ impl Default for Settings {
             backup_dir: String::new(),
             backup_on_save: false,
             theme: default_theme(),
+            language: default_language(),
         }
     }
 }

@@ -1,6 +1,7 @@
 // Segmented light/dark switch — used in the sidebar and in Settings.
 
 import { Theme } from "./theme";
+import { t } from "./i18n";
 import { IconMoon, IconSun } from "./icons";
 
 interface Props {
@@ -17,7 +18,7 @@ export function ThemeSwitch({ theme, onChange }: Props) {
         onClick={() => onChange("light")}
       >
         <IconSun size={14} />
-        Light
+        {t("light")}
       </button>
       <button
         type="button"
@@ -25,7 +26,7 @@ export function ThemeSwitch({ theme, onChange }: Props) {
         onClick={() => onChange("dark")}
       >
         <IconMoon size={14} />
-        Dark
+        {t("dark")}
       </button>
     </div>
   );

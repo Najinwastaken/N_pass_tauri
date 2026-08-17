@@ -3,6 +3,7 @@
 // buttons must NOT have the attribute or they would drag instead of click.
 
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import { t } from "./lib/i18n";
 import { IconGear, IconLock, IconMinus, IconSquare, IconX } from "./lib/icons";
 
 interface Props {
@@ -21,17 +22,17 @@ export function Titlebar({ onSettings }: Props) {
       </span>
       <div className="titlebar-buttons">
         {onSettings && (
-          <button className="settings" title="Settings" onClick={onSettings}>
+          <button className="settings" title={t("settings")} onClick={onSettings}>
             <IconGear size={19} />
           </button>
         )}
-        <button title="Minimize" onClick={() => void win.minimize()}>
+        <button title={t("minimize")} onClick={() => void win.minimize()}>
           <IconMinus size={20} />
         </button>
-        <button title="Maximize" onClick={() => void win.toggleMaximize()}>
+        <button title={t("maximize")} onClick={() => void win.toggleMaximize()}>
           <IconSquare size={16} />
         </button>
-        <button className="close" title="Close" onClick={() => void win.close()}>
+        <button className="close" title={t("close")} onClick={() => void win.close()}>
           <IconX size={20} />
         </button>
       </div>

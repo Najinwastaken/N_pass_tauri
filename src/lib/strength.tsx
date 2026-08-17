@@ -15,17 +15,18 @@ export function strength(pw: string): number {
   return score;
 }
 
-const LABELS = ["", "Weak", "Fair", "Good", "Strong"];
+import { t } from "./i18n";
 
 export function StrengthMeter({ password }: { password: string }) {
   if (!password) return null;
   const score = strength(password);
+  const labels = ["", t("strength1"), t("strength2"), t("strength3"), t("strength4")];
   return (
     <div className={`strength strength-${score}`}>
       <div className="strength-bar">
         <div style={{ width: `${(score / 4) * 100}%` }} />
       </div>
-      <span>{LABELS[score]}</span>
+      <span>{labels[score]}</span>
     </div>
   );
 }

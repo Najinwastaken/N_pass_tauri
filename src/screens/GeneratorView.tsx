@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api, GeneratorOptions } from "../api";
+import { t, TKey } from "../lib/i18n";
 import { IconCheck, IconCopy, IconRefresh } from "../lib/icons";
 
 const DEFAULTS: GeneratorOptions = {
@@ -10,11 +11,11 @@ const DEFAULTS: GeneratorOptions = {
   symbols: true,
 };
 
-const CLASS_OPTIONS: { key: keyof GeneratorOptions; label: string }[] = [
-  { key: "lowercase", label: "Lowercase (a–z)" },
-  { key: "uppercase", label: "Uppercase (A–Z)" },
-  { key: "digits", label: "Digits (0–9)" },
-  { key: "symbols", label: "Symbols (!@#…)" },
+const CLASS_OPTIONS: { key: keyof GeneratorOptions; labelKey: TKey }[] = [
+  { key: "lowercase", labelKey: "lowercase" },
+  { key: "uppercase", labelKey: "uppercase" },
+  { key: "digits", labelKey: "digits" },
+  { key: "symbols", labelKey: "symbols" },
 ];
 
 export function GeneratorView() {
@@ -45,26 +46,26 @@ export function GeneratorView() {
   return (
     <div className="view">
       <div className="view-header">
-        <h2>Password generator</h2>
+        <h2>{t("generatorTitle")}</h2>
       </div>
       <div className="generator">
         <div className="generated-row">
           <code className="generated">{noClasses ? "—" : password}</code>
           <button
             className="icon"
-            title="Regenerate"
+            title={t("regenerate")}
             onClick={() => setOpts((o) => ({ ...o }))}
           >
             <IconRefresh size={16} />
           </button>
           <button onClick={() => void handleCopy()} disabled={noClasses}>
             {copied ? <IconCheck size={15} /> : <IconCopy size={15} />}
-            {copied ? "Copied" : "Copy"}
+            {copied ? t("copied") : t("copy")}
           </button>
         </div>
 
         <label className="slider-label">
-          Length: {opts.length}
+          {t("length")}: {opts.length}
           <input
             type="range"
             min={4}
@@ -74,9 +75,9 @@ export function GeneratorView() {
           />
         </label>
 
-        {CLASS_OPTIONS.map(({ key, label }) => (
+        {CLASS_OPTIONS.map(({ key, labelKey }) => (
           <label key={key} className="check">
-            {label}
+            {t(labelKey)}
             <span className="switch">
               <input
                 type="checkbox"
@@ -87,7 +88,7 @@ export function GeneratorView() {
             </span>
           </label>
         ))}
-        {noClasses && <p className="error">Enable at least one character class.</p>}
+        {noClasses && <p className="error">{t("atLeastOneClass")}</p>}
       </div>
     </div>
   );

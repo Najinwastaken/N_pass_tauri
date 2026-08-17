@@ -4,6 +4,7 @@ import { smartCopy } from "../lib/smartCopy";
 import { useDragReorder } from "../lib/useDragReorder";
 import { IconGrip, IconNote, IconPlus, IconSearch, IconTrash } from "../lib/icons";
 import { SearchBox } from "../lib/useSearch";
+import { t } from "../lib/i18n";
 
 export function NotesView() {
   const [entries, setEntries] = useState<NoteMeta[]>([]);
@@ -43,7 +44,7 @@ export function NotesView() {
   }, []);
 
   async function handleDelete(entry: NoteMeta) {
-    if (!window.confirm(`Delete "${entry.title}"?`)) return;
+    if (!window.confirm(t("deleteEntryConfirm", { name: entry.title }))) return;
     await api.deleteNote(entry.id);
     await refresh();
   }
@@ -64,25 +65,25 @@ export function NotesView() {
   return (
     <div className="view">
       <div className="view-header">
-        <h2>Secure Notes</h2>
+        <h2>{t("navNotes")}</h2>
         <div className="view-header-actions">
           <SearchBox query={query} onChange={setQuery} />
           <button onClick={() => setEditing("new")}>
             <IconPlus size={15} />
-            Add
+            {t("add")}
           </button>
         </div>
       </div>
       {entries.length === 0 && (
         <div className="empty-state">
           <IconNote size={36} />
-          <span>No notes yet.</span>
+          <span>{t("emptyNotes")}</span>
         </div>
       )}
       {entries.length > 0 && searching && results !== null && results.length === 0 && (
         <div className="empty-state">
           <IconSearch size={36} />
-          <span>Nothing matches “{query}”.</span>
+          <span>{t("nothingMatches", { q: query })}</span>
         </div>
       )}
       <ul className="entry-list">
@@ -96,7 +97,7 @@ export function NotesView() {
               onClick={() => setEditing(e)}
             >
               {!searching && (
-                <span className="drag-handle" title="Drag to reorder" {...handleProps(e.id)}>
+                <span className="drag-handle" title={t("dragToReorder")} {...handleProps(e.id)}>
                   <IconGrip size={14} />
                 </span>
               )}
@@ -109,7 +110,7 @@ export function NotesView() {
               <div className="entry-actions">
                 <button
                   className="icon danger"
-                  title="Delete"
+                  title={t("del")}
                   onClick={(ev) => {
                     ev.stopPropagation();
                     void handleDelete(e);
@@ -173,11 +174,11 @@ function NoteForm({
   return (
     <div className="view narrow">
       <div className="view-header">
-        <h2>{initial ? "Edit note" : "New note"}</h2>
+        <h2>{initial ? t("editNote") : t("newNote")}</h2>
       </div>
       <form className="form" onSubmit={handleSubmit}>
         <label>
-          Title *
+          {t("fTitle")} *
           <input
             autoFocus
             key={`t${shake}`}
@@ -188,7 +189,7 @@ function NoteForm({
           />
         </label>
         <label>
-          Note *
+          {t("fNote")} *
           <textarea
             key={`b${shake}`}
             className={invalid("body", !form.body.trim())}
@@ -200,9 +201,9 @@ function NoteForm({
         </label>
         <div className="form-actions">
           <button type="button" className="secondary" onClick={onCancel}>
-            Cancel
+            {t("cancel")}
           </button>
-          <button type="submit">Save</button>
+          <button type="submit">{t("save")}</button>
         </div>
       </form>
     </div>

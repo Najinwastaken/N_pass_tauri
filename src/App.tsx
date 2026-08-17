@@ -3,6 +3,7 @@ import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { api } from "./api";
 import { applyTheme, cachedTheme } from "./lib/theme";
+import { t } from "./lib/i18n";
 import { IconX } from "./lib/icons";
 import { Titlebar } from "./Titlebar";
 import { ProfileSelect } from "./screens/ProfileSelect";
@@ -44,10 +45,18 @@ export default function App() {
   const maximized = useMaximized();
   const [toast, setToast] = useState<string | null>(null);
 
+  // Language switches re-render the whole tree (t() reads a module var).
+  const [, setLangTick] = useState(0);
+  useEffect(() => {
+    const bump = () => setLangTick((n) => n + 1);
+    window.addEventListener("np-lang", bump);
+    return () => window.removeEventListener("np-lang", bump);
+  }, []);
+
   // Background backup failures arrive from Rust as an event → styled toast.
   useEffect(() => {
     const unlisten = listen<string>("backup-failed", (e) => {
-      setToast(`Backup failed — ${e.payload}`);
+      setToast(t("backupFailedToast", { err: e.payload }));
     });
     return () => {
       void unlisten.then((f) => f());
@@ -134,7 +143,7 @@ export default function App() {
       {toast && (
         <div className="toast fade-in" role="alert">
           <span className="toast-text">{toast}</span>
-          <button className="icon" title="Dismiss" onClick={() => setToast(null)}>
+          <button className="icon" title={t("close")} onClick={() => setToast(null)}>
             <IconX size={14} />
           </button>
         </div>

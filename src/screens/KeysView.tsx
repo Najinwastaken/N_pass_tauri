@@ -4,6 +4,7 @@ import { smartCopy, useClearCellSelection } from "../lib/smartCopy";
 import { useDragReorder } from "../lib/useDragReorder";
 import { Cell } from "../lib/Cell";
 import { SearchBox, useSearch } from "../lib/useSearch";
+import { t } from "../lib/i18n";
 import {
   IconCopy,
   IconEye,
@@ -44,7 +45,7 @@ export function KeysView() {
   }
 
   async function handleDelete(entry: KeyMeta) {
-    if (!window.confirm(`Delete "${entry.title}"?`)) return;
+    if (!window.confirm(t("deleteEntryConfirm", { name: entry.title }))) return;
     await api.deleteKey(entry.id);
     await refresh();
   }
@@ -65,19 +66,19 @@ export function KeysView() {
   return (
     <div className="view">
       <div className="view-header">
-        <h2>Passkeys</h2>
+        <h2>{t("navPasskeys")}</h2>
         <div className="view-header-actions">
           <SearchBox query={query} onChange={setQuery} />
           <button onClick={() => setEditing("new")}>
             <IconPlus size={15} />
-            Add
+            {t("add")}
           </button>
         </div>
       </div>
       {entries.length === 0 && (
         <div className="empty-state">
           <IconKey size={36} />
-          <span>No keys yet.</span>
+          <span>{t("emptyKeys")}</span>
         </div>
       )}
       <ul className="entry-list">
@@ -86,7 +87,7 @@ export function KeysView() {
           return (
             <li key={e.id} {...drag} className={`entry ${drag.className}`}>
               {!searching && (
-                <span className="drag-handle" title="Drag to reorder" {...handleProps(e.id)}>
+                <span className="drag-handle" title={t("dragToReorder")} {...handleProps(e.id)}>
                   <IconGrip size={14} />
                 </span>
               )}
@@ -101,22 +102,22 @@ export function KeysView() {
               <div className="entry-actions">
                 <button
                   className="icon"
-                  title={revealed[e.id] !== undefined ? "Hide" : "Show"}
+                  title={revealed[e.id] !== undefined ? t("hide") : t("show")}
                   onClick={() => void toggleReveal(e.id)}
                 >
                   {revealed[e.id] !== undefined ? <IconEyeOff size={15} /> : <IconEye size={15} />}
                 </button>
                 <button
                   className="icon"
-                  title="Copy key"
+                  title={t("copyKey")}
                   onClick={() => void api.copySecret("key", e.id)}
                 >
                   <IconCopy size={15} />
                 </button>
-                <button className="icon" title="Edit" onClick={() => setEditing(e)}>
+                <button className="icon" title={t("edit")} onClick={() => setEditing(e)}>
                   <IconPencil size={15} />
                 </button>
-                <button className="icon danger" title="Delete" onClick={() => void handleDelete(e)}>
+                <button className="icon danger" title={t("del")} onClick={() => void handleDelete(e)}>
                   <IconTrash size={15} />
                 </button>
               </div>
@@ -175,11 +176,11 @@ function KeyForm({
   return (
     <div className="view narrow">
       <div className="view-header">
-        <h2>{initial ? "Edit key" : "New key"}</h2>
+        <h2>{initial ? t("editKey") : t("newKey")}</h2>
       </div>
       <form className="form" onSubmit={handleSubmit}>
         <label>
-          Title *
+          {t("fTitle")} *
           <input
             autoFocus
             key={`t${shake}`}
@@ -190,7 +191,7 @@ function KeyForm({
           />
         </label>
         <label>
-          Key *
+          {t("fKey")} *
           <div className="input-row">
             <input
               key={`k${shake}`}
@@ -203,7 +204,7 @@ function KeyForm({
             <button
               type="button"
               className="icon"
-              title={showKey ? "Hide" : "Show"}
+              title={showKey ? t("hide") : t("show")}
               onClick={() => setShowKey((v) => !v)}
             >
               {showKey ? <IconEyeOff size={16} /> : <IconEye size={16} />}
@@ -211,7 +212,7 @@ function KeyForm({
           </div>
         </label>
         <label>
-          Notes
+          {t("fNotes")}
           <textarea
             value={form.notes}
             onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
@@ -221,9 +222,9 @@ function KeyForm({
         </label>
         <div className="form-actions">
           <button type="button" className="secondary" onClick={onCancel}>
-            Cancel
+            {t("cancel")}
           </button>
-          <button type="submit">Save</button>
+          <button type="submit">{t("save")}</button>
         </div>
       </form>
     </div>

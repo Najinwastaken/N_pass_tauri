@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { api } from "../api";
+import { t } from "../lib/i18n";
 import { StrengthMeter } from "../lib/strength";
 
 interface Props {
@@ -22,9 +23,9 @@ export function CreateProfile({ onCreated, onBack }: Props) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!name.trim()) return fail("Profile name is required");
-    if (!password) return fail("Master password is required");
-    if (password !== repeat) return fail("Passwords do not match");
+    if (!name.trim()) return fail(t("errNameRequired"));
+    if (!password) return fail(t("errPasswordRequired"));
+    if (password !== repeat) return fail(t("errPasswordsMismatch"));
 
     setBusy(true);
     setError("");
@@ -33,9 +34,8 @@ export function CreateProfile({ onCreated, onBack }: Props) {
       onCreated(name.trim());
     } catch (err) {
       const code = String(err);
-      if (code === "profile_exists") fail("A profile with this name already exists");
-      else if (code === "invalid_name")
-        fail("Only letters, digits, spaces, - and _ are allowed");
+      if (code === "profile_exists") fail(t("errProfileExists"));
+      else if (code === "invalid_name") fail(t("errInvalidName"));
       else fail(code);
     } finally {
       setBusy(false);
@@ -44,20 +44,20 @@ export function CreateProfile({ onCreated, onBack }: Props) {
 
   return (
     <div className="center-screen">
-      <h1 className="app-title">New profile</h1>
+      <h1 className="app-title">{t("newProfile")}</h1>
       <form className="card form" onSubmit={handleSubmit}>
         <label>
-          Profile name
+          {t("profileName")}
           <input
             autoFocus
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="e.g. Misha"
+            placeholder={t("profileNamePh")}
             maxLength={40}
           />
         </label>
         <label>
-          Master password
+          {t("masterPassword")}
           <input
             type="password"
             value={password}
@@ -66,17 +66,14 @@ export function CreateProfile({ onCreated, onBack }: Props) {
         </label>
         <StrengthMeter password={password} />
         <label>
-          Repeat password
+          {t("repeatPassword")}
           <input
             type="password"
             value={repeat}
             onChange={(e) => setRepeat(e.target.value)}
           />
         </label>
-        <p className="warning">
-          ⚠ The master password cannot be recovered. If you forget it, the
-          data is lost. Write it down and keep it safe.
-        </p>
+        <p className="warning">{t("noRecoveryWarning")}</p>
         {error && (
           <p className="error shake" key={shake}>
             {error}
@@ -84,10 +81,10 @@ export function CreateProfile({ onCreated, onBack }: Props) {
         )}
         <div className="form-actions">
           <button type="button" className="secondary" onClick={onBack} disabled={busy}>
-            Back
+            {t("back")}
           </button>
           <button type="submit" disabled={busy}>
-            {busy ? "Creating…" : "Create"}
+            {busy ? t("creating") : t("createBtn")}
           </button>
         </div>
       </form>

@@ -3,6 +3,7 @@
 // a filtered subset would scramble the real order).
 
 import { useEffect, useRef, useState } from "react";
+import { t } from "./i18n";
 import { IconSearch, IconX } from "./icons";
 
 export function useSearch<T>(items: T[], keysOf: (item: T) => string[]) {
@@ -46,7 +47,7 @@ export function SearchBox({ query, onChange }: BoxProps) {
       <input
         ref={inputRef}
         value={query}
-        placeholder="Search…  (Ctrl+F)"
+        placeholder={t("searchPh")}
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={(e) => {
           if (e.key === "Escape") {
@@ -56,7 +57,7 @@ export function SearchBox({ query, onChange }: BoxProps) {
         }}
       />
       {query && (
-        <button className="icon" title="Clear" onClick={() => onChange("")}>
+        <button className="icon" title={t("clear")} onClick={() => onChange("")}>
           <IconX size={13} />
         </button>
       )}

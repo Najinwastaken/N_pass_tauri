@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
+import { applyLang, currentLang, isLang, t } from "../lib/i18n";
 import { applyTheme, cachedTheme, Theme } from "../lib/theme";
 import { ThemeSwitch } from "../lib/ThemeSwitch";
 import {
@@ -30,12 +31,12 @@ type Section =
   | "generator"
   | "settings";
 
-const SECTIONS: { id: Section; label: string; icon: React.ReactNode }[] = [
-  { id: "passwords", label: "Passwords", icon: <IconShield size={16} /> },
-  { id: "passkeys", label: "Passkeys", icon: <IconKey size={16} /> },
-  { id: "cards", label: "Credit Cards", icon: <IconCard size={16} /> },
-  { id: "notes", label: "Secure Notes", icon: <IconNote size={16} /> },
-  { id: "generator", label: "Generator", icon: <IconSparkles size={16} /> },
+const SECTIONS: { id: Section; labelKey: "navPasswords" | "navPasskeys" | "navCards" | "navNotes" | "navGenerator"; icon: React.ReactNode }[] = [
+  { id: "passwords", labelKey: "navPasswords", icon: <IconShield size={16} /> },
+  { id: "passkeys", labelKey: "navPasskeys", icon: <IconKey size={16} /> },
+  { id: "cards", labelKey: "navCards", icon: <IconCard size={16} /> },
+  { id: "notes", labelKey: "navNotes", icon: <IconNote size={16} /> },
+  { id: "generator", labelKey: "navGenerator", icon: <IconSparkles size={16} /> },
 ];
 
 /// Report user activity to the auto-lock timer, at most once per interval.
@@ -85,12 +86,15 @@ export function Main({ profile, onLocked }: Props) {
     };
   }, []);
 
-  // The vault's saved theme wins once we are unlocked.
+  // The vault's saved theme and language win once we are unlocked.
   useEffect(() => {
     void api.getSettings().then((s) => {
-      const t: Theme = s.theme === "light" ? "light" : "dark";
-      applyTheme(t);
-      setTheme(t);
+      const th: Theme = s.theme === "light" ? "light" : "dark";
+      applyTheme(th);
+      setTheme(th);
+      if (isLang(s.language) && s.language !== currentLang()) {
+        applyLang(s.language);
+      }
     });
   }, []);
 
@@ -134,22 +138,22 @@ export function Main({ profile, onLocked }: Props) {
               onClick={() => setSection(s.id)}
             >
               {s.icon}
-              {s.label}
+              {t(s.labelKey)}
             </button>
           ))}
         </nav>
         <div className={`drag-hint ${draggingActive ? "visible" : ""}`} aria-hidden={!draggingActive}>
-          <span className="drag-hint-label">press</span>
+          <span className="drag-hint-label">{t("hintPress")}</span>
           <span className="drag-hint-esc">
             <span className="drag-hint-esc-text">ESC</span>
           </span>
-          <span className="drag-hint-label">to cancel drag</span>
+          <span className="drag-hint-label">{t("hintCancelDrag")}</span>
         </div>
         <div className="sidebar-footer">
           <ThemeSwitch theme={theme} onChange={(t) => void changeTheme(t)} />
           <button className="nav-item lock" onClick={() => void handleLock()}>
             <IconLock size={15} />
-            Lock
+            {t("lock")}
           </button>
         </div>
       </aside>
