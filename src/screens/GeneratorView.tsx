@@ -1,15 +1,8 @@
 import { useEffect, useState } from "react";
 import { api, GeneratorOptions } from "../api";
 import { t, TKey } from "../lib/i18n";
+import { loadGenOptions, saveGenOptions } from "../lib/genPrefs";
 import { IconCheck, IconCopy, IconRefresh } from "../lib/icons";
-
-const DEFAULTS: GeneratorOptions = {
-  length: 16,
-  lowercase: true,
-  uppercase: true,
-  digits: true,
-  symbols: true,
-};
 
 const CLASS_OPTIONS: { key: keyof GeneratorOptions; labelKey: TKey }[] = [
   { key: "lowercase", labelKey: "lowercase" },
@@ -19,12 +12,14 @@ const CLASS_OPTIONS: { key: keyof GeneratorOptions; labelKey: TKey }[] = [
 ];
 
 export function GeneratorView() {
-  const [opts, setOpts] = useState<GeneratorOptions>(DEFAULTS);
+  const [opts, setOpts] = useState<GeneratorOptions>(loadGenOptions);
   const [password, setPassword] = useState("");
   const [copied, setCopied] = useState(false);
 
-  // Auto-regenerate whenever any option changes.
+  // Auto-regenerate whenever any option changes; remember the options so
+  // the in-form generate button uses the same settings.
   useEffect(() => {
+    saveGenOptions(opts);
     void api
       .generatePassword(opts)
       .then(setPassword)

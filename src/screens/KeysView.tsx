@@ -13,8 +13,10 @@ import {
   IconKey,
   IconPencil,
   IconPlus,
+  IconSparkles,
   IconTrash,
 } from "../lib/icons";
+import { loadGenOptions } from "../lib/genPrefs";
 
 const EMPTY: KeyInput = { title: "", key: "", notes: "" };
 
@@ -171,6 +173,12 @@ function KeyForm({
     onDone();
   }
 
+  async function handleGenerate() {
+    const key = await api.generatePassword(loadGenOptions());
+    setForm((f) => ({ ...f, key }));
+    setShowKey(true);
+  }
+
   if (!loaded) return null;
 
   return (
@@ -201,6 +209,14 @@ function KeyForm({
               onChange={(e) => setForm((f) => ({ ...f, key: e.target.value }))}
               onKeyDown={smartCopy()}
             />
+            <button
+              type="button"
+              className="icon"
+              title={t("generate")}
+              onClick={() => void handleGenerate()}
+            >
+              <IconSparkles size={16} />
+            </button>
             <button
               type="button"
               className="icon"

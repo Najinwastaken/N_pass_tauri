@@ -143,6 +143,7 @@ const DICT = {
   digits: ["Digits (0–9)", "Цифры (0–9)", "Цифри (0–9)"],
   symbols: ["Symbols (!@#…)", "Символы (!@#…)", "Символи (!@#…)"],
   regenerate: ["Regenerate", "Сгенерировать заново", "Згенерувати знову"],
+  generate: ["Generate", "Сгенерировать", "Згенерувати"],
   atLeastOneClass: [
     "Enable at least one character class.",
     "Включите хотя бы один набор символов.",

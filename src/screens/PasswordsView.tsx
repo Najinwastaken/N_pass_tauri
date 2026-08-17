@@ -14,8 +14,10 @@ import {
   IconPlus,
   IconSearch,
   IconShield,
+  IconSparkles,
   IconTrash,
 } from "../lib/icons";
+import { loadGenOptions } from "../lib/genPrefs";
 import { Cell } from "../lib/Cell";
 import { SearchBox, useSearch } from "../lib/useSearch";
 import { t } from "../lib/i18n";
@@ -226,6 +228,14 @@ function EntryForm({
   const set = (field: keyof PasswordInput) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setForm((f) => ({ ...f, [field]: e.target.value }));
 
+  /** One click: fill the field with a password generated using the
+      last-used Generator settings, and reveal it so the user sees it. */
+  async function handleGenerate() {
+    const password = await api.generatePassword(loadGenOptions());
+    setForm((f) => ({ ...f, password }));
+    setShowPw(true);
+  }
+
   if (!loaded) return null;
 
   return (
@@ -260,6 +270,14 @@ function EntryForm({
               onChange={set("password")}
               onKeyDown={smartCopy()}
             />
+            <button
+              type="button"
+              className="icon"
+              title={t("generate")}
+              onClick={() => void handleGenerate()}
+            >
+              <IconSparkles size={16} />
+            </button>
             <button
               type="button"
               className="icon"
