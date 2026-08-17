@@ -1104,6 +1104,7 @@ textarea.invalid {
 }
 
 .cell-user input,
+.cell-mail input,
 .cell-url input {
   color: var(--text-muted);
 }
