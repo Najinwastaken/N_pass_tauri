@@ -33,9 +33,8 @@ Grab the latest release from the [Releases](../../releases) page:
 
 | File | What it is |
 | --- | --- |
-| `N-Pass_x.y.z_x64-setup.exe` | Installer (recommended) — per-user, no admin rights needed |
-| `n-pass.exe` | Portable — just put it in a folder and run |
-| `N-Pass_x.y.z_x64_en-US.msi` | MSI installer — **not recommended**: installs to Program Files, where portable vault storage cannot work |
+| `N-Pass_x.y.z_x64-setup.exe` | Installer — per-user, no admin rights needed |
+| `n-pass.exe` | Portable (recommended) — just put it in a folder and run |
 
 Requirements: Windows 10/11 x64 with WebView2 (already present on any
 up-to-date system).
