@@ -18,6 +18,9 @@ pub struct PasswordEntry {
     pub title: String,
     pub username: String,
     pub password: String,
+    /// `default` keeps vaults saved before this field existed loadable.
+    #[serde(default)]
+    pub email: String,
     pub url: String,
     pub notes: String,
 }

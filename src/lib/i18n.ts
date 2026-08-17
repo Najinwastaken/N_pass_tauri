@@ -119,6 +119,7 @@ const DICT = {
   editEntry: ["Edit entry", "Редактирование записи", "Редагування запису"],
   fTitle: ["Title", "Название", "Назва"],
   fUsername: ["Username", "Логин", "Логін"],
+  fMail: ["Mail", "Почта", "Пошта"],
   fPassword: ["Password", "Пароль", "Пароль"],
   fUrl: ["URL", "URL", "URL"],
   fNotes: ["Notes", "Заметки", "Нотатки"],

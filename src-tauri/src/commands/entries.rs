@@ -61,6 +61,7 @@ pub struct PasswordMeta {
     pub id: Uuid,
     pub title: String,
     pub username: String,
+    pub email: String,
     pub url: String,
     pub notes: String,
 }
@@ -71,6 +72,7 @@ impl From<&PasswordEntry> for PasswordMeta {
             id: e.id,
             title: e.title.clone(),
             username: e.username.clone(),
+            email: e.email.clone(),
             url: e.url.clone(),
             notes: e.notes.clone(),
         }
@@ -83,6 +85,8 @@ pub struct PasswordInput {
     pub title: String,
     pub username: String,
     pub password: String,
+    #[serde(default)]
+    pub email: String,
     pub url: String,
     pub notes: String,
 }
@@ -108,6 +112,7 @@ pub fn add_password(
             title: input.title.trim().to_string(),
             username: input.username,
             password: input.password,
+            email: input.email,
             url: input.url,
             notes: input.notes,
         };
@@ -136,6 +141,7 @@ pub fn update_password(
         entry.title = input.title.trim().to_string();
         entry.username = input.username;
         entry.password = input.password;
+        entry.email = input.email;
         entry.url = input.url;
         entry.notes = input.notes;
         Ok(())

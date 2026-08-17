@@ -1052,11 +1052,15 @@ textarea.invalid {
 }
 
 .cell-user {
-  flex: 0.8 1 0;
+  flex: 0.75 1 0;
+}
+
+.cell-mail {
+  flex: 1.05 1 0;
 }
 
 .cell-url {
-  flex: 1.4 1 0;
+  flex: 1.25 1 0;
 }
 
 /* keys */

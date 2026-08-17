@@ -223,6 +223,7 @@ mod tests {
             title: "Test service".into(),
             username: "misha".into(),
             password: "s3cr3t-p@ss".into(),
+            email: "misha@example.com".into(),
             url: "https://example.com".into(),
             notes: "".into(),
         });

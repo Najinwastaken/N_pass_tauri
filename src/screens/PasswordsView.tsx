@@ -26,6 +26,7 @@ const EMPTY: PasswordInput = {
   title: "",
   username: "",
   password: "",
+  email: "",
   url: "",
   notes: "",
 };
@@ -40,6 +41,7 @@ export function PasswordsView() {
   const { query, setQuery, filtered, searching } = useSearch(entries, (e) => [
     e.title,
     e.username,
+    e.email,
     e.url,
     e.notes,
   ]);
@@ -123,6 +125,7 @@ export function PasswordsView() {
               </span>
               <Cell value={e.title} kind="title" />
               <Cell value={e.username} kind="user" />
+              <Cell value={e.email} kind="mail" />
               <Cell
                 value={e.url}
                 kind="url"
@@ -203,6 +206,7 @@ function EntryForm({
         title: initial.title,
         username: initial.username,
         password,
+        email: initial.email,
         url: initial.url,
         notes: initial.notes,
       });
@@ -288,6 +292,16 @@ function EntryForm({
             </button>
           </div>
           <StrengthMeter password={form.password} />
+        </label>
+        <label>
+          {t("fMail")}
+          <input
+            type="email"
+            value={form.email}
+            onChange={set("email")}
+            placeholder="name@example.com"
+            onKeyDown={smartCopy()}
+          />
         </label>
         <label>
           {t("fUrl")}
