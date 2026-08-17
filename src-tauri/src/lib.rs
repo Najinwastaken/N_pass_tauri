@@ -31,6 +31,7 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_clipboard_manager::init())
+        .plugin(tauri_plugin_dialog::init())
         .manage(AppState::default())
         .setup(|app| {
             // Vaults live next to the executable — the app is fully
@@ -137,6 +138,8 @@ pub fn run() {
             commands::entries::reorder_entries,
             commands::settings::get_settings,
             commands::settings::update_settings,
+            commands::settings::pick_backup_dir,
+            commands::settings::backup_now,
             commands::misc::generate_password,
             commands::misc::copy_text,
             commands::misc::copy_secret,

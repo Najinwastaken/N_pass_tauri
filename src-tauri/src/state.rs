@@ -30,8 +30,29 @@ pub struct UnlockedVault {
 
 impl UnlockedVault {
     /// Persist current `data` to disk (fresh nonce, atomic write, backup).
+    /// If configured, best-effort copy the encrypted file into the user's
+    /// backup folder afterwards — a backup failure must not fail the save.
     pub fn save(&self) -> Result<(), VaultError> {
-        vault::save(&self.path, &self.data, &self.key, &self.salt, &self.kdf_params)
+        vault::save(&self.path, &self.data, &self.key, &self.salt, &self.kdf_params)?;
+        if self.data.settings.backup_on_save {
+            let dir = self.data.settings.backup_dir.trim();
+            if !dir.is_empty() {
+                let _ = self.backup_to(dir);
+            }
+        }
+        Ok(())
+    }
+
+    /// Copy the (encrypted, self-contained) vault file into `dir`.
+    pub fn backup_to(&self, dir: &str) -> std::io::Result<()> {
+        let dir = std::path::Path::new(dir);
+        std::fs::create_dir_all(dir)?;
+        let name = self
+            .path
+            .file_name()
+            .ok_or_else(|| std::io::Error::other("vault path has no file name"))?;
+        std::fs::copy(&self.path, dir.join(name))?;
+        Ok(())
     }
 }
 

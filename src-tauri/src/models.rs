@@ -73,6 +73,13 @@ pub struct Settings {
     /// (only if it still holds our value). 0 = never clear.
     #[serde(default = "default_clipboard_clear_seconds")]
     pub clipboard_clear_seconds: u32,
+    /// Extra folder the encrypted vault is copied into (e.g. a
+    /// Google Drive / Dropbox synced folder). Empty = no backup.
+    #[serde(default)]
+    pub backup_dir: String,
+    /// Copy the vault into `backup_dir` after every save.
+    #[serde(default)]
+    pub backup_on_save: bool,
     /// "dark" | "light"
     #[serde(default = "default_theme")]
     pub theme: String,
@@ -96,6 +103,8 @@ impl Default for Settings {
             auto_lock_minutes: default_auto_lock_minutes(),
             lock_on_minimize: false,
             clipboard_clear_seconds: default_clipboard_clear_seconds(),
+            backup_dir: String::new(),
+            backup_on_save: false,
             theme: default_theme(),
         }
     }

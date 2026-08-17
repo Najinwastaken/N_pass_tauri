@@ -104,8 +104,86 @@ export function SettingsView({ theme, onThemeChange }: Props) {
           </div>
         </div>
 
+        <BackupSection settings={settings} onSave={(s) => void save(s)} />
+
         <ChangePassword />
       </div>
+    </div>
+  );
+}
+
+/** Backup copy of the encrypted vault into any folder — point it at a
+    Google Drive / Dropbox synced folder to get cloud backup without any
+    cloud API in the app. */
+function BackupSection({
+  settings,
+  onSave,
+}: {
+  settings: Settings;
+  onSave: (s: Settings) => void;
+}) {
+  const [status, setStatus] = useState<"idle" | "done" | "error">("idle");
+  const hasDir = settings.backup_dir.trim().length > 0;
+
+  async function choose() {
+    const dir = await api.pickBackupDir();
+    if (dir) onSave({ ...settings, backup_dir: dir });
+  }
+
+  async function backupNow() {
+    try {
+      await api.backupNow();
+      setStatus("done");
+    } catch {
+      setStatus("error");
+    }
+    setTimeout(() => setStatus("idle"), 2000);
+  }
+
+  return (
+    <div className="settings-row settings-block" style={{ cursor: "default" }}>
+      <div className="settings-block-head">
+        <div style={{ minWidth: 0 }}>
+          <div>Backup folder</div>
+          <div className="muted small backup-path" title={settings.backup_dir}>
+            {hasDir
+              ? settings.backup_dir
+              : "Point it at a synced folder (Google Drive, Dropbox…) for cloud backup"}
+          </div>
+        </div>
+        <div className="input-suffix">
+          {hasDir && (
+            <button type="button" onClick={() => void backupNow()}>
+              {status === "done" ? "Copied ✓" : status === "error" ? "Failed ✗" : "Backup now"}
+            </button>
+          )}
+          <button type="button" className="secondary" onClick={() => void choose()}>
+            {hasDir ? "Change…" : "Choose…"}
+          </button>
+          {hasDir && (
+            <button
+              type="button"
+              className="secondary"
+              onClick={() => onSave({ ...settings, backup_dir: "", backup_on_save: false })}
+            >
+              Clear
+            </button>
+          )}
+        </div>
+      </div>
+      {hasDir && (
+        <label className="settings-inline-row">
+          <span>Copy vault on every save</span>
+          <span className="switch">
+            <input
+              type="checkbox"
+              checked={settings.backup_on_save}
+              onChange={(e) => onSave({ ...settings, backup_on_save: e.target.checked })}
+            />
+            <span className="switch-track" />
+          </span>
+        </label>
+      )}
     </div>
   );
 }

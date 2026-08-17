@@ -72,6 +72,8 @@ export interface Settings {
   auto_lock_minutes: number;
   lock_on_minimize: boolean;
   clipboard_clear_seconds: number;
+  backup_dir: string;
+  backup_on_save: boolean;
   theme: string;
 }
 
@@ -130,6 +132,8 @@ export const api = {
   getSettings: () => invoke<Settings>("get_settings"),
   updateSettings: (settings: Settings) =>
     invoke<void>("update_settings", { settings }),
+  pickBackupDir: () => invoke<string | null>("pick_backup_dir"),
+  backupNow: () => invoke<void>("backup_now"),
 
   generatePassword: (opts: GeneratorOptions) =>
     invoke<string>("generate_password", { ...opts }),
