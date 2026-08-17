@@ -30,3 +30,6 @@ vaults/
 
 # Claude Code local files
 .claude/
+
+# Local project notes
+npass2_prompt.md
