@@ -3,6 +3,7 @@ pub mod crypto;
 pub mod models;
 pub mod state;
 pub mod vault;
+pub mod window_state;
 
 use std::time::Duration;
 
@@ -70,6 +71,15 @@ pub fn run() {
             *app.state::<AppState>().vaults_dir.lock().expect("poisoned") = dir;
             *app.state::<AppState>().app.lock().expect("poisoned") = Some(app.handle().clone());
 
+            // Window geometry: remembered size/position, or an adaptive
+            // default on the first run. The window is configured hidden
+            // and shown only after the geometry is applied (no flicker).
+            if let Some(window) = app.get_webview_window("main") {
+                window_state::restore_or_default(&window);
+                let _ = window.show();
+                let _ = window.set_focus();
+            }
+
             // Auto-lock by inactivity: a background thread compares idle
             // time against the unlocked vault's own settings.
             let handle = app.handle().clone();
@@ -90,6 +100,10 @@ pub fn run() {
             Ok(())
         })
         .on_window_event(|window, event| {
+            // Remember geometry for the next launch.
+            if let tauri::WindowEvent::CloseRequested { .. } = event {
+                window_state::save(window);
+            }
             // Lock when the window is minimized (if enabled in settings).
             if let tauri::WindowEvent::Resized(_) = event {
                 if window.is_minimized().unwrap_or(false) {
