@@ -880,11 +880,19 @@ textarea.invalid {
   max-width: 680px;
 }
 
+/* Stays in reach while a long list scrolls underneath, so "Add" and the
+   search box never require scrolling back to the top. */
 .view-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 22px;
+  padding: 10px 0 14px;
+  margin-bottom: 8px;
+  background: color-mix(in srgb, var(--bg-base) 88%, transparent);
+  backdrop-filter: blur(16px);
 }
 
 .view-header h2 {

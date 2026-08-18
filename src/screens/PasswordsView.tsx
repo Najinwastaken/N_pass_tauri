@@ -23,6 +23,7 @@ import { Cell } from "../lib/Cell";
 import { shortUrl } from "../lib/url";
 import { SearchBox, useSearch } from "../lib/useSearch";
 import { t } from "../lib/i18n";
+import { useListScroll } from "../lib/useListScroll";
 
 const EMPTY: PasswordInput = {
   title: "",
@@ -36,6 +37,8 @@ const EMPTY: PasswordInput = {
 export function PasswordsView() {
   const [entries, setEntries] = useState<PasswordMeta[]>([]);
   const [editing, setEditing] = useState<PasswordMeta | "new" | null>(null);
+  // Coming back from the form should land where the user was.
+  const rememberScroll = useListScroll(editing !== null, entries);
   const [revealed, setRevealed] = useState<Record<string, string>>({});
   const { dragProps, handleProps } = useDragReorder("passwords", entries, setEntries);
   const { menu, openMenu } = useContextMenu();
@@ -92,7 +95,7 @@ export function PasswordsView() {
         <h2>{t("navPasswords")}</h2>
         <div className="view-header-actions">
           <SearchBox query={query} onChange={setQuery} />
-          <button onClick={() => setEditing("new")}>
+          <button onClick={() => { rememberScroll(); setEditing("new"); }}>
             <IconPlus size={15} />
             {t("add")}
           </button>
@@ -163,7 +166,7 @@ export function PasswordsView() {
                 >
                   <IconCopy size={15} />
                 </button>
-                <button className="icon" title={t("edit")} onClick={() => setEditing(e)}>
+                <button className="icon" title={t("edit")} onClick={() => { rememberScroll(); setEditing(e); }}>
                   <IconPencil size={15} />
                 </button>
                 <button className="icon danger" title={t("del")} onClick={() => void handleDelete(e)}>

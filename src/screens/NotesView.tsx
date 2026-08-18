@@ -5,10 +5,13 @@ import { useDragReorder } from "../lib/useDragReorder";
 import { IconGrip, IconNote, IconPlus, IconSearch, IconTrash } from "../lib/icons";
 import { SearchBox } from "../lib/useSearch";
 import { t } from "../lib/i18n";
+import { useListScroll } from "../lib/useListScroll";
 
 export function NotesView() {
   const [entries, setEntries] = useState<NoteMeta[]>([]);
   const [editing, setEditing] = useState<NoteMeta | "new" | null>(null);
+  // Coming back from the form should land where the user was.
+  const rememberScroll = useListScroll(editing !== null, entries);
   const { dragProps, handleProps } = useDragReorder("notes", entries, setEntries);
 
   // Full-text search runs in Rust (bodies never reach the WebView in
@@ -68,7 +71,7 @@ export function NotesView() {
         <h2>{t("navNotes")}</h2>
         <div className="view-header-actions">
           <SearchBox query={query} onChange={setQuery} />
-          <button onClick={() => setEditing("new")}>
+          <button onClick={() => { rememberScroll(); setEditing("new"); }}>
             <IconPlus size={15} />
             {t("add")}
           </button>
@@ -94,7 +97,7 @@ export function NotesView() {
               key={e.id}
               {...drag}
               className={`entry clickable ${drag.className}`}
-              onClick={() => setEditing(e)}
+              onClick={() => { rememberScroll(); setEditing(e); }}
             >
               {!searching && (
                 <span className="drag-handle" title={t("dragToReorder")} {...handleProps(e.id)}>

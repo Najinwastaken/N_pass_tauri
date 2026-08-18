@@ -5,6 +5,7 @@ import { useDragReorder } from "../lib/useDragReorder";
 import { Cell } from "../lib/Cell";
 import { SearchBox, useSearch } from "../lib/useSearch";
 import { t } from "../lib/i18n";
+import { useListScroll } from "../lib/useListScroll";
 import {
   IconCopy,
   IconEye,
@@ -24,6 +25,8 @@ const EMPTY: KeyInput = { title: "", key: "", notes: "" };
 export function KeysView() {
   const [entries, setEntries] = useState<KeyMeta[]>([]);
   const [editing, setEditing] = useState<KeyMeta | "new" | null>(null);
+  // Coming back from the form should land where the user was.
+  const rememberScroll = useListScroll(editing !== null, entries);
   const [revealed, setRevealed] = useState<Record<string, string>>({});
   const { dragProps, handleProps } = useDragReorder("keys", entries, setEntries);
   useClearCellSelection();
@@ -72,7 +75,7 @@ export function KeysView() {
         <h2>{t("navPasskeys")}</h2>
         <div className="view-header-actions">
           <SearchBox query={query} onChange={setQuery} />
-          <button onClick={() => setEditing("new")}>
+          <button onClick={() => { rememberScroll(); setEditing("new"); }}>
             <IconPlus size={15} />
             {t("add")}
           </button>
@@ -117,7 +120,7 @@ export function KeysView() {
                 >
                   <IconCopy size={15} />
                 </button>
-                <button className="icon" title={t("edit")} onClick={() => setEditing(e)}>
+                <button className="icon" title={t("edit")} onClick={() => { rememberScroll(); setEditing(e); }}>
                   <IconPencil size={15} />
                 </button>
                 <button className="icon danger" title={t("del")} onClick={() => void handleDelete(e)}>
