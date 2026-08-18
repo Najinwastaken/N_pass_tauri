@@ -133,11 +133,13 @@ export function CardsView() {
           const drag = searching ? { className: "" } : dragProps(index, e.id);
           return (
             <li key={e.id} {...drag} className={`entry ${drag.className}`}>
-              {!searching && (
-                <span className="drag-handle" title={t("dragToReorder")} {...handleProps(e.id)}>
-                  <IconGrip size={14} />
-                </span>
-              )}
+              <span
+                className={`drag-handle ${searching ? "invisible" : ""}`}
+                title={t("dragToReorder")}
+                {...(searching ? {} : handleProps(e.id))}
+              >
+                <IconGrip size={14} />
+              </span>
               <span className="entry-icon">
                 <IconCard size={17} />
               </span>

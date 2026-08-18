@@ -112,11 +112,13 @@ export function NotesView() {
               className={`entry clickable ${drag.className}`}
               onClick={() => { rememberScroll(); setEditing(e); }}
             >
-              {!searching && (
-                <span className="drag-handle" title={t("dragToReorder")} {...handleProps(e.id)}>
-                  <IconGrip size={14} />
-                </span>
-              )}
+              <span
+                className={`drag-handle ${searching ? "invisible" : ""}`}
+                title={t("dragToReorder")}
+                {...(searching ? {} : handleProps(e.id))}
+              >
+                <IconGrip size={14} />
+              </span>
               <span className="entry-icon">
                 <IconNote size={17} />
               </span>

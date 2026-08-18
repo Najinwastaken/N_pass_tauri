@@ -168,11 +168,13 @@ export function PasswordsView() {
       : dragProps(indexById.get(entry.id) ?? 0, entry.id);
     return (
       <li key={entry.id} {...drag} className={`entry ${drag.className}`}>
-        {!searching && (
-          <span className="drag-handle" title={t("dragToReorder")} {...handleProps(entry.id)}>
-            <IconGrip size={14} />
-          </span>
-        )}
+        <span
+          className={`drag-handle ${searching ? "invisible" : ""}`}
+          title={t("dragToReorder")}
+          {...(searching ? {} : handleProps(entry.id))}
+        >
+          <IconGrip size={14} />
+        </span>
         <span className="entry-icon">
           <IconShield size={17} />
         </span>
@@ -195,11 +197,15 @@ export function PasswordsView() {
           <code>{revealed[entry.id] ?? "••••••••"}</code>
         </div>
         <div className="entry-actions">
-          {entry.url && (
-            <button className="icon" title={t("openUrl")} onClick={() => void api.openUrl(entry.url)}>
-              <IconExternal size={15} />
-            </button>
-          )}
+          {/* Kept in place when there is no URL so every row's action
+              block is the same width and the columns stay aligned. */}
+          <button
+            className={`icon ${entry.url ? "" : "invisible"}`}
+            title={t("openUrl")}
+            onClick={() => entry.url && void api.openUrl(entry.url)}
+          >
+            <IconExternal size={15} />
+          </button>
           <button
             className="icon"
             title={revealed[entry.id] !== undefined ? t("hide") : t("show")}

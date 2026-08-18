@@ -1055,6 +1055,13 @@ textarea.invalid {
   opacity: 1;
 }
 
+/* Still occupies its slot: rows must not shift when an element does not
+   apply to them. */
+.invisible {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 /* With transparent rows the icon tile is the row's visual anchor. */
 .entry-icon {
   width: 32px;
