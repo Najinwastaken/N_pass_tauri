@@ -20,6 +20,7 @@ import {
 } from "../lib/icons";
 import { loadGenOptions, loadNewEntryReveal, saveNewEntryReveal } from "../lib/genPrefs";
 import { Cell } from "../lib/Cell";
+import { shortUrl } from "../lib/url";
 import { SearchBox, useSearch } from "../lib/useSearch";
 import { t } from "../lib/i18n";
 
@@ -128,7 +129,8 @@ export function PasswordsView() {
               <Cell value={e.username} kind="user" />
               <Cell value={e.email} kind="mail" />
               <Cell
-                value={e.url}
+                value={shortUrl(e.url)}
+                full={e.url}
                 kind="url"
                 onContextMenu={(ev) =>
                   e.url &&

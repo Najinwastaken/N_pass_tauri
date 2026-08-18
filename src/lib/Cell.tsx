@@ -10,7 +10,11 @@ import { smartCopy } from "./smartCopy";
 import { IconCheck, IconCopy } from "./icons";
 
 interface Props {
+  /** What the row shows. */
   value: string;
+  /** The real value behind an abbreviated display (e.g. a shortened URL):
+      copying and the tooltip use this, so nothing is lost. */
+  full?: string;
   /** Column class suffix: rendered as `cell-<kind>` (widths in CSS). */
   kind: string;
   /** Optional smart-copy override for "whole value" (e.g. MM/YY expiry). */
@@ -21,14 +25,17 @@ interface Props {
 const TIP_DELAY_MS = 450;
 const TIP_MAX_WIDTH = 420;
 
-export function Cell({ value, kind, wholeValue, onContextMenu }: Props) {
+export function Cell({ value, full, kind, wholeValue, onContextMenu }: Props) {
+  // Copy and tooltip always work with the complete value.
+  const fullValue = full ?? value;
+  const abbreviated = fullValue !== value;
   const [copied, setCopied] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const tipTimer = useRef<number | undefined>(undefined);
   const [tip, setTip] = useState<{ x: number; y: number } | null>(null);
 
   async function handleCopy() {
-    await api.copyText(value);
+    await api.copyText(fullValue);
     setCopied(true);
     setTimeout(() => setCopied(false), 1100);
   }
@@ -40,8 +47,10 @@ export function Cell({ value, kind, wholeValue, onContextMenu }: Props) {
 
   function maybeShowTip() {
     const el = inputRef.current;
-    // Only when the value is actually truncated with an ellipsis.
-    if (!el || el.scrollWidth <= el.clientWidth) return;
+    // When the text is cut off, or when what is shown is an abbreviation
+    // of something longer (then the tooltip reveals the real address).
+    const truncated = el ? el.scrollWidth > el.clientWidth : false;
+    if (!el || (!truncated && !abbreviated)) return;
     window.clearTimeout(tipTimer.current);
     tipTimer.current = window.setTimeout(() => {
       const rect = el.getBoundingClientRect();
@@ -58,7 +67,7 @@ export function Cell({ value, kind, wholeValue, onContextMenu }: Props) {
         ref={inputRef}
         readOnly
         value={value}
-        onKeyDown={smartCopy(wholeValue)}
+        onKeyDown={smartCopy(wholeValue ?? (() => fullValue))}
         onChange={() => undefined}
         onMouseEnter={maybeShowTip}
         onMouseLeave={hideTip}
@@ -76,7 +85,7 @@ export function Cell({ value, kind, wholeValue, onContextMenu }: Props) {
       )}
       {tip && (
         <div className="cell-tip" style={{ left: tip.x, top: tip.y }}>
-          {value}
+          {fullValue}
         </div>
       )}
     </span>
