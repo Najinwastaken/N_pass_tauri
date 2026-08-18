@@ -128,17 +128,105 @@ pub fn copy_secret(
     copy_with_autoclear(&app, secret)
 }
 
-/// Open an http(s) URL in the default browser. Anything else is rejected —
-/// this must never become a way to launch arbitrary programs.
-#[tauri::command]
-pub fn open_url(app: AppHandle, url: String) -> Result<(), String> {
-    let url = url.trim().to_string();
-    if !url.starts_with("https://") && !url.starts_with("http://") {
+/// Accept what people actually type — "discord.com", "www.discord.com",
+/// a proper URL, or a doubled scheme left by a copy-paste slip
+/// ("http://https://discord.com/") — and return a plain http(s) URL.
+///
+/// Everything else is rejected. This is the only place where the app
+/// launches an external program, so it must never become a way to run
+/// `javascript:`, `file://`, custom protocol handlers or local paths.
+fn normalize_url(raw: &str) -> Result<String, String> {
+    let trimmed = raw.trim();
+    if trimmed.is_empty()
+        || trimmed.contains(char::is_whitespace)
+        || trimmed.contains('\\')
+    {
         return Err("invalid_url".into());
     }
+
+    // Peel off repeated schemes; the innermost one wins. `to_ascii_lowercase`
+    // keeps byte lengths identical, so slicing by the stripped length is safe.
+    let mut rest = trimmed;
+    let mut scheme = "https";
+    loop {
+        let lower = rest.to_ascii_lowercase();
+        if let Some(stripped) = lower.strip_prefix("https://") {
+            scheme = "https";
+            rest = &rest[rest.len() - stripped.len()..];
+        } else if let Some(stripped) = lower.strip_prefix("http://") {
+            scheme = "http";
+            rest = &rest[rest.len() - stripped.len()..];
+        } else {
+            break;
+        }
+    }
+
+    // What remains must look like host[:port][/path] — no leftover scheme.
+    let host = rest.split('/').next().unwrap_or("");
+    if host.is_empty() || (!host.contains('.') && !host.starts_with("localhost")) {
+        return Err("invalid_url".into());
+    }
+    if let Some((_, after_colon)) = host.split_once(':') {
+        // A colon in the host is only legal as a port number.
+        if after_colon.is_empty() || !after_colon.chars().all(|c| c.is_ascii_digit()) {
+            return Err("invalid_url".into());
+        }
+    }
+
+    Ok(format!("{scheme}://{rest}"))
+}
+
+/// Open a URL in the default browser (see `normalize_url` for what is
+/// accepted).
+#[tauri::command]
+pub fn open_url(app: AppHandle, url: String) -> Result<(), String> {
+    let url = normalize_url(&url)?;
     app.opener()
         .open_url(url, None::<&str>)
         .map_err(|e| format!("error: {e}"))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::normalize_url;
+
+    #[test]
+    fn accepts_common_ways_of_writing_a_link() {
+        for (input, expected) in [
+            ("https://discord.com", "https://discord.com"),
+            ("http://discord.com", "http://discord.com"),
+            ("www.discord.com", "https://www.discord.com"),
+            ("discord.com", "https://discord.com"),
+            ("  discord.com/invite/abc  ", "https://discord.com/invite/abc"),
+            ("HTTPS://Discord.com", "https://Discord.com"),
+            ("localhost:1420", "https://localhost:1420"),
+            // copy-paste slips with a doubled scheme
+            ("http://https://discord.com/", "https://discord.com/"),
+            ("https://https://discord.com/", "https://discord.com/"),
+        ] {
+            assert_eq!(normalize_url(input).unwrap(), expected, "input: {input}");
+        }
+    }
+
+    #[test]
+    fn rejects_anything_that_is_not_a_web_address() {
+        for input in [
+            "",
+            "   ",
+            "javascript:alert(1)",
+            "javascript:fetch('x.com')",
+            "file:///C:/Users/secret.txt",
+            "ftp://example.com",
+            "mailto:someone@example.com",
+            "steam://run/570",
+            r"C:\Windows\System32\calc.exe",
+            r"\\evil-server\share",
+            "not a url",
+            "localhost:notaport",
+        ] {
+            assert!(normalize_url(input).is_err(), "should reject: {input}");
+        }
+    }
 }
 
 /// Called by the frontend (throttled) on user input so the auto-lock
