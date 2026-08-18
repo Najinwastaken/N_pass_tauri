@@ -67,6 +67,41 @@ A `.npass` file is fully self-contained: copy it to another machine,
 open it with the same master password, and everything is there. This
 also means **backing up = copying one file**.
 
+## Backups and recovery
+
+There are three layers of safety, and it is worth knowing what each one
+does — they are not interchangeable.
+
+**1. The `.bak` file — protection against a broken write.** Every time
+something is saved, N-Pass writes the new version to a temporary file
+first, turns the current vault into `.bak`, and only then puts the new
+file in place. So even if the power goes out mid-save, a complete,
+readable vault always exists on disk. To go back to it: close N-Pass,
+rename `Najin.npass` to something else, rename `Najin.npass.bak` to
+`Najin.npass`, start the app.
+
+⚠️ **The `.bak` file is not an undo.** It holds the state from exactly
+one save ago, and *every* change saves — adding an entry, editing,
+reordering, even flipping a setting. If you delete an entry by accident
+and then do anything else, that deletion is already in the `.bak` too.
+For that, use layer 2 or 3.
+
+**2. Backup folder (Settings → Backup folder) — protection against
+losing the computer.** Choose a folder synced by Google Drive, Dropbox or
+OneDrive, and N-Pass drops a copy of the encrypted vault there after
+every change; the sync client uploads it. As a bonus, those services keep
+their own file history, so their web interface can restore *yesterday's*
+version — that is what actually saves you from an accidental deletion.
+
+**3. Copying the file yourself — the simplest one.** Any copy of
+`Najin.npass` on a flash drive or another disk is a full backup. It opens
+with the master password that was in use when the copy was made.
+
+⚠️ One thing people forget: if you changed your master password, older
+copies (including `.bak`) still open with the **old** one — they were
+encrypted with it. A file that looks "broken" is often just waiting for
+the previous password.
+
 ## Everyday features
 
 - **Search** everything with **Ctrl+F** — multiple words in any order;
