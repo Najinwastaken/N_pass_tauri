@@ -111,6 +111,94 @@ To copy something other than the password — a login, an e-mail, a link —
 hover over that value and use the small copy button that appears next to
 it, or click into the value and press **Ctrl+C**.
 
+## Organising your list
+
+Once you have more than a handful of entries the list gets long. Two
+things keep it manageable: **categories**, which gather entries under
+headings, and **dragging**, which puts them in the order that suits you.
+
+### Categories: just type one
+
+A category is nothing more than a word you write into an entry. There is
+no list to set up first and no "create category" button anywhere.
+
+Say you are saving your GitHub account. The entry form has a **Category**
+field — type `Dev` into it and save. Done: the category now exists, and
+GitHub appears under a **DEV** heading in the list. Save GitLab with the
+same word and it joins the same group.
+
+The field suggests words you have used before, so you do not have to
+remember the exact spelling — start typing `D` and `Dev` is offered.
+Picking from the list also protects you from ending up with `Dev` and
+`dev` as two separate groups.
+
+A category disappears by itself when the last entry carrying it is gone,
+so there is never anything to tidy up. Leave the field empty for entries
+that do not belong anywhere — they gather at the bottom under
+**Without category**.
+
+### Showing one category at a time
+
+The dropdown next to the search box (it says **All**) narrows the list to
+a single category. Choose `Games` and only games stay on screen; choose
+**All** to bring everything back.
+
+### Folding groups away
+
+Click a heading and the group folds up: only the heading remains, with the
+number of entries beside it. Click again to open it.
+
+The button to the left of the dropdown does that to every group at once —
+fold everything to see your whole structure on one screen, then open it
+back up. Whichever groups you leave folded are remembered, so the app
+opens the way you left it.
+
+### Putting categories in the order you want
+
+Categories start off in alphabetical order, so `AI Agents` comes before
+`Dev`. If you open `Dev` ten times a day, you probably want it first.
+
+Hover over a heading — a **grip** appears on its left, six small dots.
+Hold it down and drag the heading up or down. A bright line shows where
+the category will land; let go and it moves there.
+
+While you drag, the entries step out of the way and only the headings are
+left — so you are rearranging a short list of headings instead of hauling
+a category across a screenful of rows. Changed your mind? Press **Esc**
+before letting go and nothing happens.
+
+The order is stored inside the vault file, so it travels with it: copy the
+vault to another computer and your categories are still arranged your way.
+
+### Renaming a whole category
+
+Suppose you named it `dev` and would rather have `Work Dev`. Editing ten
+entries by hand would be tedious, so don't.
+
+Hover over the heading, click the **...** button on its right and choose
+**Rename category**. The heading turns into a text box: type the new name
+and press **Enter** (or **Esc** to change your mind). Every entry in that
+category follows in one step, and the category keeps its place in the
+order you arranged.
+
+Rename it to a name that already exists — say `dev` to `Work` when `Work`
+is already there — and the two groups merge into one. N-Pass asks before
+doing it.
+
+### Reordering the entries themselves
+
+Rows work exactly like headings: hover over a row, take the grip on its
+left, drag up or down, let go. **Esc** cancels.
+
+One rule worth knowing: **a row can only be moved within its own
+category.** Drag `GitHub` out of `Dev` and over the games, and the line
+simply does not appear — the drop is not offered. This is deliberate. A
+category is a property written on the entry, not a place on the screen, so
+a row dropped into a foreign group would only spring back and look broken.
+
+To genuinely move an entry to another category, open it with the pencil
+icon and change its **Category** field.
+
 ## Where is my data?
 
 In the `vaults` folder **next to the executable**:
@@ -181,16 +269,10 @@ the previous password.
   and path get the space instead of `https://www.`, while copying returns
   the exact address you saved — the scheme matters for routers and
   internal services.
-- **Categories** for passwords. Type one into an entry and it exists —
-  there is no list to create or maintain, and a category disappears by
-  itself once no entry carries it. The list then groups by category under
-  foldable headings, and a dropdown next to the search box narrows it to
-  one of them. Drag a heading by its grip to put the categories in the
-  order you want, rename a whole category from the `...` menu on its
-  heading (every entry in it follows, in one step), and fold or unfold all
-  of them with the button next to the dropdown. Which groups you left
-  folded is remembered between runs, and the order you arranged is kept
-  inside the vault itself, so it travels with a copied vault.
+- **Categories** for passwords: write a word into an entry and the group
+  exists. Headings fold, the whole list folds with one button, categories
+  can be dragged into the order you want and renamed in one step — walked
+  through in [Organising your list](#organising-your-list).
 - **Drag & drop** reordering with an insertion line; **Esc** cancels.
 - **Auto-lock** after inactivity (default 10 min) and optionally on
   window minimize. Locking wipes the encryption key and the decrypted
