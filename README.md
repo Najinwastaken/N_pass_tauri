@@ -39,6 +39,12 @@ Grab the latest release from the [Releases](../../releases) page:
 Requirements: Windows 10/11 x64 with WebView2 (already present on any
 up-to-date system).
 
+> **"Windows protected your PC" on first launch?** That blue window
+> appears for every program without a paid code-signing certificate, and
+> N-Pass does not have one. Click **More info → Run anyway**. If you would
+> rather not take anyone's word for it, you can build the app yourself
+> from this source code — see the last section.
+
 ## First steps
 
 1. Run N-Pass → click **New profile**.
@@ -49,6 +55,57 @@ up-to-date system).
 
 Each profile is one independent vault file — family members can each
 have their own, protected by their own master password.
+
+## Choosing a master password
+
+This is the one password you will actually have to remember, so it is
+worth a minute of thought:
+
+- **Longer beats weirder.** Four random words — `coffee-anchor-violet-lamp`
+  — are both easier to remember and harder to crack than `P@ssw0rd!`.
+- **Do not reuse it** from any website. If that site leaks, your vault
+  should not be affected.
+- **Write it down on paper** and put it where you keep documents. This is
+  not paranoia: there is no "reset password" link anywhere, and nobody —
+  including the author of this app — can open your vault without it.
+- Do not store it in a text file on the same computer.
+
+You can change it later at any time: **Settings → Master password →
+Change**. The vault is then re-encrypted with the new one.
+
+## What goes in each section
+
+| Section | What to keep there |
+| --- | --- |
+| **Passwords** | Website and app logins: title, username, e-mail, password, link, notes |
+| **Passkeys** | Any single secret string: API key, license key, Wi-Fi password, recovery code |
+| **Credit Cards** | Card number, cardholder, expiry, CVV, payment network |
+| **Secure Notes** | Free-form text: passport details, door codes, anything private |
+
+> A note on the name: **Passkeys** here means "keys" in the plain sense —
+> long secret strings you paste somewhere. It is not the WebAuthn
+> passwordless login standard; N-Pass does not create those.
+
+## Using a saved password day to day
+
+N-Pass does not type passwords into websites for you (no browser
+extension, no autofill — see [Non-goals](#non-goals)). The everyday loop
+is copy-and-paste, and it takes about three seconds:
+
+1. Find the entry — start typing in the search box or press **Ctrl+F**.
+2. Click the **copy** icon (⧉) on the right side of the row. Nothing is
+   shown on screen; the password goes straight to the clipboard.
+3. Switch to the website and paste with **Ctrl+V**.
+4. Forget about it — the clipboard clears itself 30 seconds later, so the
+   password does not linger there for the rest of the day.
+
+Need to *see* a password instead of copying it (to type it on a phone,
+for example)? Click the **eye** icon — the value appears in the row and
+hides again on the second click.
+
+To copy something other than the password — a login, an e-mail, a link —
+hover over that value and use the small copy button that appears next to
+it, or click into the value and press **Ctrl+C**.
 
 ## Where is my data?
 
@@ -129,6 +186,56 @@ the previous password.
   one-click ✨ button right in the entry form that fills the password
   field using your last generator settings.
 - **Master password change** re-encrypts the vault with a fresh salt.
+
+## Keyboard shortcuts
+
+| Shortcut | What it does |
+| --- | --- |
+| **Ctrl+F** | Jump to the search box |
+| **Ctrl+C** | Copy the field the cursor is in (or just the selected part) |
+| **Ctrl+L** | Lock the vault immediately |
+| **Esc** | Clear the search / cancel a drag / close a menu |
+
+## Questions people ask
+
+**I forgot my master password. What now?**
+Nothing can be done — that is the whole point of the design. The password
+is not stored anywhere, not even as a hash, so there is nothing to reset
+or recover. The data in the vault is lost. This is why the app nags you
+to write the password down.
+
+**Is it safe to keep my vault in Google Drive / Dropbox?**
+Yes, that is exactly what the backup folder is for. The file leaves your
+computer already encrypted, and the cloud provider only ever sees
+meaningless bytes. Just make sure the master password itself is strong —
+a copy in the cloud is a copy someone could, in theory, try to crack
+offline.
+
+**How do I move everything to a new computer?**
+Copy the whole N-Pass folder (or just the `.npass` file into the `vaults`
+folder on the new machine) and open it with the same master password.
+Nothing needs to be exported or imported.
+
+**Does it fill passwords into websites automatically?**
+No, and it will not — no browser extension, no autofill. Copy and paste
+is the intended workflow.
+
+**Someone got my `.npass` file. Should I panic?**
+Without your master password the file is useless: it is a blob of
+authenticated ciphertext, and there is no shortcut around the key
+derivation. Still, if you suspect a copy leaked, change the master
+password (**Settings → Master password**) — the vault is re-encrypted
+with a new key, so the leaked copy stays frozen at its old contents and
+old password.
+
+**My antivirus is suspicious of the file.**
+Unsigned executables from small projects trigger heuristics fairly often.
+The code is fully open — you can read it and build the app yourself.
+
+**Can I use one profile on two computers at once?**
+You can keep a copy on both, but there is no sync or merge: whichever
+copy is saved last wins. Treat it as one file you carry around, not as a
+shared database.
 
 ## Is it secure? (the technical part)
 
