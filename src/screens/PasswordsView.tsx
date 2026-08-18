@@ -22,6 +22,7 @@ import {
 import { loadGenOptions, loadNewEntryReveal, saveNewEntryReveal } from "../lib/genPrefs";
 import { Cell } from "../lib/Cell";
 import { ComboBox } from "../lib/ComboBox";
+import { Select } from "../lib/Select";
 import { shortUrl } from "../lib/url";
 import { SearchBox, useSearch } from "../lib/useSearch";
 import { t } from "../lib/i18n";
@@ -236,6 +237,20 @@ export function PasswordsView() {
       <div className="view-header">
         <h2>{t("navPasswords")}</h2>
         <div className="view-header-actions">
+          {/* Appears by itself once entries carry categories. The label is
+              the current category so an active filter is never invisible. */}
+          {categories.length > 0 && (
+            <div className={`filter-select ${filter ? "active" : ""}`}>
+              <Select
+                value={filter}
+                onChange={setFilter}
+                options={[
+                  { value: "", label: t("filterAll") },
+                  ...categories.map((name) => ({ value: name, label: name })),
+                ]}
+              />
+            </div>
+          )}
           <SearchBox query={query} onChange={setQuery} />
           <button
             onClick={() => {
@@ -248,24 +263,6 @@ export function PasswordsView() {
           </button>
         </div>
       </div>
-
-      {/* The row appears by itself once entries carry categories. */}
-      {categories.length > 0 && (
-        <div className="pill-row">
-          <button className={`pill ${filter === "" ? "active" : ""}`} onClick={() => setFilter("")}>
-            {t("filterAll")}
-          </button>
-          {categories.map((name) => (
-            <button
-              key={name}
-              className={`pill ${filter === name ? "active" : ""}`}
-              onClick={() => setFilter(name)}
-            >
-              {name}
-            </button>
-          ))}
-        </div>
-      )}
 
       {entries.length === 0 && (
         <div className="empty-state">

@@ -1617,39 +1617,23 @@ button.cell-copy svg {
   overflow-wrap: break-word;
 }
 
-/* ---------- category pills ---------- */
+/* ---------- category filter ---------- */
 
-.pill-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
+.filter-select {
+  width: 158px;
   flex-shrink: 0;
-  margin-bottom: 14px;
 }
 
-button.pill {
-  background: var(--input-bg);
-  border: 1px solid var(--border);
-  color: var(--text-muted);
-  border-radius: 999px;
-  padding: 5px 14px;
-  font-size: 12.5px;
-  font-weight: 500;
-}
-
-button.pill:hover:not(:disabled) {
-  background: var(--hover);
-  color: var(--text);
-  filter: none;
-  box-shadow: none;
-}
-
-button.pill.active {
+/* Filtering is a mode, so it stays visible at a glance. */
+.filter-select.active .select-trigger {
   background: var(--accent-soft);
   border-color: transparent;
   color: var(--accent-text);
   font-weight: 600;
+}
+
+.filter-select.active .select-chevron {
+  color: var(--accent-text);
 }
 
 /* ---------- category groups inside a list ---------- */
