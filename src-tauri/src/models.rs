@@ -21,6 +21,11 @@ pub struct PasswordEntry {
     /// `default` keeps vaults saved before this field existed loadable.
     #[serde(default)]
     pub email: String,
+    /// Free-form group ("Mail", "Games"…). Empty = not categorised.
+    /// Categories exist only as the values entries carry — there is no
+    /// separate list to manage.
+    #[serde(default)]
+    pub category: String,
     pub url: String,
     pub notes: String,
 }

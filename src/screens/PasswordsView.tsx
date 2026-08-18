@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { api, PasswordInput, PasswordMeta } from "../api";
 import { smartCopy, useClearCellSelection } from "../lib/smartCopy";
 import { useDragReorder } from "../lib/useDragReorder";
 import { useContextMenu } from "../lib/ContextMenu";
 import { StrengthMeter } from "../lib/strength";
 import {
+  IconChevronDown,
   IconCopy,
   IconExternal,
   IconEye,
@@ -20,6 +21,7 @@ import {
 } from "../lib/icons";
 import { loadGenOptions, loadNewEntryReveal, saveNewEntryReveal } from "../lib/genPrefs";
 import { Cell } from "../lib/Cell";
+import { ComboBox } from "../lib/ComboBox";
 import { shortUrl } from "../lib/url";
 import { SearchBox, useSearch } from "../lib/useSearch";
 import { t } from "../lib/i18n";
@@ -30,11 +32,17 @@ import { clearDraft, getDraft, setDraft } from "../lib/drafts";
 const DRAFT_KEY = "passwords";
 type Draft = { initial: PasswordMeta | null; form: PasswordInput };
 
+/** Which category is selected and which groups are folded — kept for the
+    session so switching tabs does not reset the view. */
+const VIEW_KEY = "passwords-view";
+type ViewState = { filter: string; collapsed: string[] };
+
 const EMPTY: PasswordInput = {
   title: "",
   username: "",
   password: "",
   email: "",
+  category: "",
   url: "",
   notes: "",
 };
@@ -56,9 +64,53 @@ export function PasswordsView() {
     e.title,
     e.username,
     e.email,
+    e.category,
     e.url,
     e.notes,
   ]);
+
+  const savedView = getDraft<ViewState>(VIEW_KEY);
+  const [filter, setFilter] = useState(savedView?.filter ?? "");
+  const [collapsed, setCollapsed] = useState<string[]>(savedView?.collapsed ?? []);
+  useEffect(() => {
+    setDraft(VIEW_KEY, { filter, collapsed });
+  }, [filter, collapsed]);
+
+  /** Categories are just the values entries carry — nothing to manage. */
+  const categories = useMemo(() => {
+    const used = new Set(entries.map((e) => e.category.trim()).filter(Boolean));
+    return [...used].sort((a, b) => a.localeCompare(b));
+  }, [entries]);
+
+  // The last entry of a category can disappear; do not keep filtering by it.
+  useEffect(() => {
+    if (filter && !categories.includes(filter)) setFilter("");
+  }, [categories, filter]);
+
+  const visible = filter ? filtered.filter((e) => e.category.trim() === filter) : filtered;
+
+  /** Reordering works on the full list, so rows carry their real index. */
+  const indexById = useMemo(() => new Map(entries.map((e, i) => [e.id, i])), [entries]);
+
+  /** Group only in the unfiltered, unsearched view — otherwise a flat list. */
+  const grouped = !searching && !filter && categories.length > 0;
+  const groups = useMemo(() => {
+    if (!grouped) return [];
+    const byCategory = new Map<string, PasswordMeta[]>();
+    for (const entry of visible) {
+      const key = entry.category.trim();
+      const list = byCategory.get(key);
+      if (list) list.push(entry);
+      else byCategory.set(key, [entry]);
+    }
+    const named = [...byCategory.keys()]
+      .filter(Boolean)
+      .sort((a, b) => a.localeCompare(b))
+      .map((name) => ({ name, items: byCategory.get(name) ?? [] }));
+    const rest = byCategory.get("");
+    // Uncategorised entries come last, under a neutral heading.
+    return rest?.length ? [...named, { name: "", items: rest }] : named;
+  }, [grouped, visible]);
 
   async function refresh() {
     setEntries(await api.listPasswords());
@@ -85,10 +137,17 @@ export function PasswordsView() {
     await refresh();
   }
 
+  function toggleGroup(name: string) {
+    setCollapsed((list) =>
+      list.includes(name) ? list.filter((n) => n !== name) : [...list, name],
+    );
+  }
+
   if (editing !== null) {
     return (
       <EntryForm
         initial={editing === "new" ? null : editing}
+        categories={categories}
         onDone={async () => {
           clearDraft(DRAFT_KEY);
           setEditing(null);
@@ -102,93 +161,143 @@ export function PasswordsView() {
     );
   }
 
+  function renderRow(entry: PasswordMeta) {
+    const drag = searching
+      ? { className: "" }
+      : dragProps(indexById.get(entry.id) ?? 0, entry.id);
+    return (
+      <li key={entry.id} {...drag} className={`entry ${drag.className}`}>
+        {!searching && (
+          <span className="drag-handle" title={t("dragToReorder")} {...handleProps(entry.id)}>
+            <IconGrip size={14} />
+          </span>
+        )}
+        <span className="entry-icon">
+          <IconShield size={17} />
+        </span>
+        <Cell value={entry.title} kind="title" />
+        <Cell value={entry.username} kind="user" />
+        <Cell value={entry.email} kind="mail" />
+        <Cell
+          value={shortUrl(entry.url)}
+          full={entry.url}
+          kind="url"
+          onContextMenu={(ev) =>
+            entry.url &&
+            openMenu(ev, [
+              { label: t("openUrl"), action: () => void api.openUrl(entry.url) },
+              { label: t("copyUrl"), action: () => void api.copyText(entry.url) },
+            ])
+          }
+        />
+        <div className="entry-secret">
+          <code>{revealed[entry.id] ?? "••••••••"}</code>
+        </div>
+        <div className="entry-actions">
+          {entry.url && (
+            <button className="icon" title={t("openUrl")} onClick={() => void api.openUrl(entry.url)}>
+              <IconExternal size={15} />
+            </button>
+          )}
+          <button
+            className="icon"
+            title={revealed[entry.id] !== undefined ? t("hide") : t("show")}
+            onClick={() => void toggleReveal(entry.id)}
+          >
+            {revealed[entry.id] !== undefined ? <IconEyeOff size={15} /> : <IconEye size={15} />}
+          </button>
+          <button
+            className="icon"
+            title={t("copyPassword")}
+            onClick={() => void api.copySecret("password", entry.id)}
+          >
+            <IconCopy size={15} />
+          </button>
+          <button
+            className="icon"
+            title={t("edit")}
+            onClick={() => {
+              rememberScroll();
+              setEditing(entry);
+            }}
+          >
+            <IconPencil size={15} />
+          </button>
+          <button className="icon danger" title={t("del")} onClick={() => void handleDelete(entry)}>
+            <IconTrash size={15} />
+          </button>
+        </div>
+      </li>
+    );
+  }
+
   return (
     <div className="view">
       <div className="view-header">
         <h2>{t("navPasswords")}</h2>
         <div className="view-header-actions">
           <SearchBox query={query} onChange={setQuery} />
-          <button onClick={() => { rememberScroll(); setEditing("new"); }}>
+          <button
+            onClick={() => {
+              rememberScroll();
+              setEditing("new");
+            }}
+          >
             <IconPlus size={15} />
             {t("add")}
           </button>
         </div>
       </div>
+
+      {/* The row appears by itself once entries carry categories. */}
+      {categories.length > 0 && (
+        <div className="pill-row">
+          <button className={`pill ${filter === "" ? "active" : ""}`} onClick={() => setFilter("")}>
+            {t("filterAll")}
+          </button>
+          {categories.map((name) => (
+            <button
+              key={name}
+              className={`pill ${filter === name ? "active" : ""}`}
+              onClick={() => setFilter(name)}
+            >
+              {name}
+            </button>
+          ))}
+        </div>
+      )}
+
       {entries.length === 0 && (
         <div className="empty-state">
           <IconShield size={36} />
           <span>{t("emptyPasswords")}</span>
         </div>
       )}
-      {entries.length > 0 && filtered.length === 0 && (
+      {entries.length > 0 && visible.length === 0 && (
         <div className="empty-state">
           <IconSearch size={36} />
           <span>{t("nothingMatches", { q: query })}</span>
         </div>
       )}
+
       <ul className="entry-list">
-        {filtered.map((e, index) => {
-          const drag = searching
-            ? { className: "" }
-            : dragProps(index, e.id);
-          return (
-            <li key={e.id} {...drag} className={`entry ${drag.className}`}>
-              {!searching && (
-                <span className="drag-handle" title={t("dragToReorder")} {...handleProps(e.id)}>
-                  <IconGrip size={14} />
-                </span>
-              )}
-              <span className="entry-icon">
-                <IconShield size={17} />
-              </span>
-              <Cell value={e.title} kind="title" />
-              <Cell value={e.username} kind="user" />
-              <Cell value={e.email} kind="mail" />
-              <Cell
-                value={shortUrl(e.url)}
-                full={e.url}
-                kind="url"
-                onContextMenu={(ev) =>
-                  e.url &&
-                  openMenu(ev, [
-                    { label: t("openUrl"), action: () => void api.openUrl(e.url) },
-                    { label: t("copyUrl"), action: () => void api.copyText(e.url) },
-                  ])
-                }
-              />
-              <div className="entry-secret">
-                <code>{revealed[e.id] ?? "••••••••"}</code>
-              </div>
-              <div className="entry-actions">
-                {e.url && (
-                  <button className="icon" title={t("openUrl")} onClick={() => void api.openUrl(e.url)}>
-                    <IconExternal size={15} />
-                  </button>
-                )}
-                <button
-                  className="icon"
-                  title={revealed[e.id] !== undefined ? t("hide") : t("show")}
-                  onClick={() => void toggleReveal(e.id)}
+        {grouped
+          ? groups.map((group) => {
+              const folded = collapsed.includes(group.name);
+              return [
+                <li
+                  key={`group-${group.name}`}
+                  className={`group-header ${folded ? "collapsed" : ""}`}
+                  onClick={() => toggleGroup(group.name)}
                 >
-                  {revealed[e.id] !== undefined ? <IconEyeOff size={15} /> : <IconEye size={15} />}
-                </button>
-                <button
-                  className="icon"
-                  title={t("copyPassword")}
-                  onClick={() => void api.copySecret("password", e.id)}
-                >
-                  <IconCopy size={15} />
-                </button>
-                <button className="icon" title={t("edit")} onClick={() => { rememberScroll(); setEditing(e); }}>
-                  <IconPencil size={15} />
-                </button>
-                <button className="icon danger" title={t("del")} onClick={() => void handleDelete(e)}>
-                  <IconTrash size={15} />
-                </button>
-              </div>
-            </li>
-          );
-        })}
+                  <IconChevronDown size={13} className="group-chevron" />
+                  {group.name || t("categoryOther")}
+                  <span className="group-count muted">{group.items.length}</span>
+                </li>,
+                ...(folded ? [] : group.items.map(renderRow)),
+              ];
+            })
+          : visible.map(renderRow)}
       </ul>
       {menu}
     </div>
@@ -197,10 +306,12 @@ export function PasswordsView() {
 
 function EntryForm({
   initial,
+  categories,
   onDone,
   onCancel,
 }: {
   initial: PasswordMeta | null;
+  categories: string[];
   onDone: () => void;
   onCancel: () => void;
 }) {
@@ -230,6 +341,7 @@ function EntryForm({
         username: initial.username,
         password,
         email: initial.email,
+        category: initial.category,
         url: initial.url,
         notes: initial.notes,
       });
@@ -341,6 +453,15 @@ function EntryForm({
             onChange={set("email")}
             placeholder="name@example.com"
             onKeyDown={smartCopy()}
+          />
+        </label>
+        <label>
+          {t("fCategory")}
+          <ComboBox
+            value={form.category}
+            options={categories}
+            onChange={(category) => setForm((f) => ({ ...f, category }))}
+            placeholder={t("categoryPh")}
           />
         </label>
         <label>

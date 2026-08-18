@@ -14,40 +14,40 @@ use uuid::Uuid;
 
 const MASTER_PASSWORD: &str = "demo";
 
-/// title, username, email, url
-const SERVICES: &[(&str, &str, &str, &str)] = &[
-    ("GitHub", "alex.morgan", "alex@example.com", "github.com"),
-    ("GitLab", "alex.morgan", "alex@example.com", "gitlab.com"),
-    ("Gmail", "alex.morgan", "alex@example.com", "mail.google.com"),
-    ("Outlook", "a.morgan", "alex@example.org", "outlook.com"),
-    ("Proton Mail", "alexm", "alex@example.org", "account.proton.me"),
-    ("Steam", "alexm_92", "alex@example.com", "store.steampowered.com"),
-    ("Epic Games", "alexm", "alex@example.com", "store.epicgames.com"),
-    ("GOG", "alexm92", "alex@example.com", "gog.com"),
-    ("Battle.net", "alexm#2184", "alex@example.org", "eu.shop.battle.net"),
-    ("Ubisoft Connect", "alex.morgan", "alex@example.com", "ubisoft.com"),
-    ("PlayStation Network", "alexm_ps", "alex@example.com", "playstation.com"),
-    ("Discord", "alexm", "alex@example.com", "www.discord.com/channels/@me"),
-    ("Telegram", "+10000000000", "", "web.telegram.org"),
-    ("Slack", "alex.morgan", "alex@example.com", "slack.com"),
-    ("Zoom", "alex.morgan", "alex@example.com", "zoom.us"),
-    ("Netflix", "family", "family@example.org", "netflix.com"),
-    ("Spotify", "alexm92", "alex@example.com", "open.spotify.com"),
-    ("YouTube", "alex.morgan", "alex@example.com", "youtube.com"),
-    ("Twitch", "alexm_live", "alex@example.com", "twitch.tv"),
-    ("Reddit", "not_alex", "alex@example.com", "reddit.com"),
-    ("X", "alexm92", "alex@example.com", "x.com"),
-    ("LinkedIn", "alex-morgan", "alex@example.org", "linkedin.com/in/alex-morgan"),
-    ("Amazon", "alex.morgan", "alex@example.com", "amazon.com"),
-    ("eBay", "alexm92", "alex@example.com", "ebay.com"),
-    ("PayPal", "alex.morgan", "alex@example.org", "paypal.com"),
-    ("Booking", "alex.morgan", "alex@example.com", "booking.com"),
-    ("Airbnb", "alex.morgan", "alex@example.com", "airbnb.com"),
-    ("Dropbox", "alexm", "alex@example.com", "dropbox.com"),
-    ("Notion", "alex.morgan", "alex@example.com", "notion.so"),
-    ("Figma", "alexm", "alex@example.org", "figma.com"),
-    ("Cloudflare", "alex.morgan", "alex@example.com", "dash.cloudflare.com"),
-    ("DigitalOcean", "alex.morgan", "alex@example.org", "cloud.digitalocean.com"),
+/// title, username, email, url, category
+const SERVICES: &[(&str, &str, &str, &str, &str)] = &[
+    ("GitHub", "alex.morgan", "alex@example.com", "github.com", "Dev"),
+    ("GitLab", "alex.morgan", "alex@example.com", "gitlab.com", "Dev"),
+    ("Gmail", "alex.morgan", "alex@example.com", "mail.google.com", "Mail"),
+    ("Outlook", "a.morgan", "alex@example.org", "outlook.com", "Mail"),
+    ("Proton Mail", "alexm", "alex@example.org", "account.proton.me", "Mail"),
+    ("Steam", "alexm_92", "alex@example.com", "store.steampowered.com", "Games"),
+    ("Epic Games", "alexm", "alex@example.com", "store.epicgames.com", "Games"),
+    ("GOG", "alexm92", "alex@example.com", "gog.com", "Games"),
+    ("Battle.net", "alexm#2184", "alex@example.org", "eu.shop.battle.net", "Games"),
+    ("Ubisoft Connect", "alex.morgan", "alex@example.com", "ubisoft.com", "Games"),
+    ("PlayStation Network", "alexm_ps", "alex@example.com", "playstation.com", "Games"),
+    ("Discord", "alexm", "alex@example.com", "www.discord.com/channels/@me", "Social"),
+    ("Telegram", "+10000000000", "", "web.telegram.org", "Social"),
+    ("Slack", "alex.morgan", "alex@example.com", "slack.com", "Work"),
+    ("Zoom", "alex.morgan", "alex@example.com", "zoom.us", "Work"),
+    ("Netflix", "family", "family@example.org", "netflix.com", "Media"),
+    ("Spotify", "alexm92", "alex@example.com", "open.spotify.com", "Media"),
+    ("YouTube", "alex.morgan", "alex@example.com", "youtube.com", "Media"),
+    ("Twitch", "alexm_live", "alex@example.com", "twitch.tv", "Media"),
+    ("Reddit", "not_alex", "alex@example.com", "reddit.com", "Social"),
+    ("X", "alexm92", "alex@example.com", "x.com", "Social"),
+    ("LinkedIn", "alex-morgan", "alex@example.org", "linkedin.com/in/alex-morgan", "Work"),
+    ("Amazon", "alex.morgan", "alex@example.com", "amazon.com", "Shopping"),
+    ("eBay", "alexm92", "alex@example.com", "ebay.com", "Shopping"),
+    ("PayPal", "alex.morgan", "alex@example.org", "paypal.com", "Shopping"),
+    ("Booking", "alex.morgan", "alex@example.com", "booking.com", "Travel"),
+    ("Airbnb", "alex.morgan", "alex@example.com", "airbnb.com", "Travel"),
+    ("Dropbox", "alexm", "alex@example.com", "dropbox.com", "Work"),
+    ("Notion", "alex.morgan", "alex@example.com", "notion.so", "Work"),
+    ("Figma", "alexm", "alex@example.org", "figma.com", "Dev"),
+    ("Cloudflare", "alex.morgan", "alex@example.com", "dash.cloudflare.com", "Dev"),
+    ("DigitalOcean", "alex.morgan", "alex@example.org", "cloud.digitalocean.com", "Dev"),
 ];
 
 /// title, notes
@@ -174,13 +174,14 @@ fn main() {
 
     let mut data = VaultData::default();
 
-    for (title, username, email, url) in SERVICES {
+    for (title, username, email, url, category) in SERVICES {
         data.passwords.push(PasswordEntry {
             id: Uuid::new_v4(),
             title: (*title).to_string(),
             username: (*username).to_string(),
             password: secret(),
             email: (*email).to_string(),
+            category: (*category).to_string(),
             url: (*url).to_string(),
             notes: String::new(),
         });

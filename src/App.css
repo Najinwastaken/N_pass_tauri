@@ -1616,3 +1616,75 @@ button.cell-copy svg {
   min-width: 0;
   overflow-wrap: break-word;
 }
+
+/* ---------- category pills ---------- */
+
+.pill-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  margin-bottom: 14px;
+}
+
+button.pill {
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  border-radius: 999px;
+  padding: 5px 14px;
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
+button.pill:hover:not(:disabled) {
+  background: var(--hover);
+  color: var(--text);
+  filter: none;
+  box-shadow: none;
+}
+
+button.pill.active {
+  background: var(--accent-soft);
+  border-color: transparent;
+  color: var(--accent-text);
+  font-weight: 600;
+}
+
+/* ---------- category groups inside a list ---------- */
+
+.group-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 6px 6px;
+  font-size: 11.5px;
+  font-weight: 650;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  cursor: pointer;
+  user-select: none;
+}
+
+.entry-list > .group-header:first-child {
+  padding-top: 2px;
+}
+
+.group-header:hover {
+  color: var(--text-muted);
+}
+
+.group-count {
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.group-chevron {
+  transition: transform 0.15s;
+}
+
+.group-header.collapsed .group-chevron {
+  transform: rotate(-90deg);
+}

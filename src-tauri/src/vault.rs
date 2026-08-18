@@ -224,6 +224,7 @@ mod tests {
             username: "misha".into(),
             password: "s3cr3t-p@ss".into(),
             email: "misha@example.com".into(),
+            category: "Mail".into(),
             url: "https://example.com".into(),
             notes: "".into(),
         });

@@ -7,6 +7,7 @@ export interface PasswordMeta {
   title: string;
   username: string;
   email: string;
+  category: string;
   url: string;
   notes: string;
 }
@@ -16,6 +17,7 @@ export interface PasswordInput {
   username: string;
   password: string;
   email: string;
+  category: string;
   url: string;
   notes: string;
 }
