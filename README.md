@@ -9,6 +9,8 @@ before, start with the next section.
 
 ![Rust](https://img.shields.io/badge/Rust-Tauri_2-orange) ![React](https://img.shields.io/badge/React-TypeScript-blue) ![Platform](https://img.shields.io/badge/Windows-x64-lightgrey)
 
+![The password list](screenshots/passwords.png)
+
 ---
 
 ## What is a password manager, in one minute
@@ -55,6 +57,8 @@ up-to-date system).
 
 Each profile is one independent vault file — family members can each
 have their own, protected by their own master password.
+
+![Creating an entry](screenshots/new-entry.png)
 
 ## Choosing a master password
 
@@ -200,6 +204,8 @@ the previous password.
   one-click ✨ button right in the entry form that fills the password
   field using your last generator settings.
 - **Master password change** re-encrypts the vault with a fresh salt.
+
+![Settings](screenshots/settings.png)
 
 ## Keyboard shortcuts
 
