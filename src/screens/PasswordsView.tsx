@@ -24,6 +24,11 @@ import { shortUrl } from "../lib/url";
 import { SearchBox, useSearch } from "../lib/useSearch";
 import { t } from "../lib/i18n";
 import { useListScroll } from "../lib/useListScroll";
+import { clearDraft, getDraft, setDraft } from "../lib/drafts";
+
+/** Key of the in-memory draft for this section (see lib/drafts.ts). */
+const DRAFT_KEY = "passwords";
+type Draft = { initial: PasswordMeta | null; form: PasswordInput };
 
 const EMPTY: PasswordInput = {
   title: "",
@@ -36,7 +41,11 @@ const EMPTY: PasswordInput = {
 
 export function PasswordsView() {
   const [entries, setEntries] = useState<PasswordMeta[]>([]);
-  const [editing, setEditing] = useState<PasswordMeta | "new" | null>(null);
+  // An unfinished form is reopened when the user comes back to this tab.
+  const [editing, setEditing] = useState<PasswordMeta | "new" | null>(() => {
+    const draft = getDraft<Draft>(DRAFT_KEY);
+    return draft ? (draft.initial ?? "new") : null;
+  });
   // Coming back from the form should land where the user was.
   const rememberScroll = useListScroll(editing !== null, entries);
   const [revealed, setRevealed] = useState<Record<string, string>>({});
@@ -81,10 +90,14 @@ export function PasswordsView() {
       <EntryForm
         initial={editing === "new" ? null : editing}
         onDone={async () => {
+          clearDraft(DRAFT_KEY);
           setEditing(null);
           await refresh();
         }}
-        onCancel={() => setEditing(null)}
+        onCancel={() => {
+          clearDraft(DRAFT_KEY);
+          setEditing(null);
+        }}
       />
     );
   }
@@ -191,14 +204,15 @@ function EntryForm({
   onDone: () => void;
   onCancel: () => void;
 }) {
-  const [form, setForm] = useState<PasswordInput>(EMPTY);
+  const draft = getDraft<Draft>(DRAFT_KEY);
+  const [form, setForm] = useState<PasswordInput>(() => draft?.form ?? EMPTY);
   // A new entry starts with whatever the user last chose; an existing
   // one always starts masked.
   const [showPw, setShowPw] = useState(() => initial === null && loadNewEntryReveal());
   const [regenerated, setRegenerated] = useState(false);
   const [shake, setShake] = useState(0);
   const [missing, setMissing] = useState<string[]>([]);
-  const [loaded, setLoaded] = useState(initial === null);
+  const [loaded, setLoaded] = useState(initial === null || draft !== undefined);
   const { menu, openMenu } = useContextMenu();
 
   /** All empty required fields shake together. */
@@ -208,7 +222,7 @@ function EntryForm({
   // Editing an existing entry: fetch its password once so saving does not
   // silently blank it.
   useEffect(() => {
-    if (!initial) return;
+    if (!initial || draft) return;
     void (async () => {
       const password = await api.revealPassword(initial.id);
       setForm({
@@ -231,6 +245,11 @@ function EntryForm({
       return next;
     });
   }
+
+  // Remember what is typed so switching sections does not lose it.
+  useEffect(() => {
+    setDraft(DRAFT_KEY, { initial, form });
+  }, [initial, form]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

@@ -6,6 +6,11 @@ import { Cell } from "../lib/Cell";
 import { SearchBox, useSearch } from "../lib/useSearch";
 import { t } from "../lib/i18n";
 import { useListScroll } from "../lib/useListScroll";
+import { clearDraft, getDraft, setDraft } from "../lib/drafts";
+
+/** Key of the in-memory draft for this section (see lib/drafts.ts). */
+const DRAFT_KEY = "keys";
+type Draft = { initial: KeyMeta | null; form: KeyInput };
 import {
   IconCopy,
   IconEye,
@@ -24,7 +29,11 @@ const EMPTY: KeyInput = { title: "", key: "", notes: "" };
 
 export function KeysView() {
   const [entries, setEntries] = useState<KeyMeta[]>([]);
-  const [editing, setEditing] = useState<KeyMeta | "new" | null>(null);
+  // An unfinished form is reopened when the user comes back to this tab.
+  const [editing, setEditing] = useState<KeyMeta | "new" | null>(() => {
+    const draft = getDraft<Draft>(DRAFT_KEY);
+    return draft ? (draft.initial ?? "new") : null;
+  });
   // Coming back from the form should land where the user was.
   const rememberScroll = useListScroll(editing !== null, entries);
   const [revealed, setRevealed] = useState<Record<string, string>>({});
@@ -61,10 +70,14 @@ export function KeysView() {
       <KeyForm
         initial={editing === "new" ? null : editing}
         onDone={async () => {
+          clearDraft(DRAFT_KEY);
           setEditing(null);
           await refresh();
         }}
-        onCancel={() => setEditing(null)}
+        onCancel={() => {
+          clearDraft(DRAFT_KEY);
+          setEditing(null);
+        }}
       />
     );
   }
@@ -144,24 +157,30 @@ function KeyForm({
   onDone: () => void;
   onCancel: () => void;
 }) {
-  const [form, setForm] = useState<KeyInput>(EMPTY);
+  const draft = getDraft<Draft>(DRAFT_KEY);
+  const [form, setForm] = useState<KeyInput>(() => draft?.form ?? EMPTY);
   const [showKey, setShowKey] = useState(false);
   const [regenerated, setRegenerated] = useState(false);
   const [shake, setShake] = useState(0);
   const [missing, setMissing] = useState<string[]>([]);
-  const [loaded, setLoaded] = useState(initial === null);
+  const [loaded, setLoaded] = useState(initial === null || draft !== undefined);
 
   const invalid = (field: string, empty: boolean) =>
     shake > 0 && missing.includes(field) && empty ? "shake invalid" : "";
 
   useEffect(() => {
-    if (!initial) return;
+    if (!initial || draft) return;
     void (async () => {
       const key = await api.revealKey(initial.id);
       setForm({ title: initial.title, key, notes: initial.notes });
       setLoaded(true);
     })();
   }, [initial]);
+
+  // Remember what is typed so switching sections does not lose it.
+  useEffect(() => {
+    setDraft(DRAFT_KEY, { initial, form });
+  }, [initial, form]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

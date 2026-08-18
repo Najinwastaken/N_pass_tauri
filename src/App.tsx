@@ -3,6 +3,7 @@ import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { api } from "./api";
 import { applyTheme, cachedTheme } from "./lib/theme";
+import { clearDrafts } from "./lib/drafts";
 import { t } from "./lib/i18n";
 import { IconX } from "./lib/icons";
 import { Titlebar } from "./Titlebar";
@@ -70,6 +71,8 @@ export default function App() {
   }, [toast]);
 
   async function goToStart() {
+    // Leaving the vault must not leave half-typed secrets in memory.
+    clearDrafts();
     const list = await api.listProfiles();
     setProfiles(list);
     setScreen(list.length === 0 ? { kind: "create" } : { kind: "profiles" });

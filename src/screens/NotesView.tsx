@@ -6,10 +6,19 @@ import { IconGrip, IconNote, IconPlus, IconSearch, IconTrash } from "../lib/icon
 import { SearchBox } from "../lib/useSearch";
 import { t } from "../lib/i18n";
 import { useListScroll } from "../lib/useListScroll";
+import { clearDraft, getDraft, setDraft } from "../lib/drafts";
+
+/** Key of the in-memory draft for this section (see lib/drafts.ts). */
+const DRAFT_KEY = "notes";
+type Draft = { initial: NoteMeta | null; form: NoteInput };
 
 export function NotesView() {
   const [entries, setEntries] = useState<NoteMeta[]>([]);
-  const [editing, setEditing] = useState<NoteMeta | "new" | null>(null);
+  // An unfinished form is reopened when the user comes back to this tab.
+  const [editing, setEditing] = useState<NoteMeta | "new" | null>(() => {
+    const draft = getDraft<Draft>(DRAFT_KEY);
+    return draft ? (draft.initial ?? "new") : null;
+  });
   // Coming back from the form should land where the user was.
   const rememberScroll = useListScroll(editing !== null, entries);
   const { dragProps, handleProps } = useDragReorder("notes", entries, setEntries);
@@ -57,10 +66,14 @@ export function NotesView() {
       <NoteForm
         initial={editing === "new" ? null : editing}
         onDone={async () => {
+          clearDraft(DRAFT_KEY);
           setEditing(null);
           await refresh();
         }}
-        onCancel={() => setEditing(null)}
+        onCancel={() => {
+          clearDraft(DRAFT_KEY);
+          setEditing(null);
+        }}
       />
     );
   }
@@ -139,23 +152,29 @@ function NoteForm({
   onDone: () => void;
   onCancel: () => void;
 }) {
-  const [form, setForm] = useState<NoteInput>({ title: "", body: "" });
+  const draft = getDraft<Draft>(DRAFT_KEY);
+  const [form, setForm] = useState<NoteInput>(() => draft?.form ?? { title: "", body: "" });
   const [shake, setShake] = useState(0);
   const [missing, setMissing] = useState<string[]>([]);
-  const [loaded, setLoaded] = useState(initial === null);
+  const [loaded, setLoaded] = useState(initial === null || draft !== undefined);
 
   const invalid = (field: string, empty: boolean) =>
     shake > 0 && missing.includes(field) && empty ? "shake invalid" : "";
 
   // The body is a secret: fetched only when the note is opened.
   useEffect(() => {
-    if (!initial) return;
+    if (!initial || draft) return;
     void (async () => {
       const body = await api.getNoteBody(initial.id);
       setForm({ title: initial.title, body });
       setLoaded(true);
     })();
   }, [initial]);
+
+  // Remember what is typed so switching sections does not lose it.
+  useEffect(() => {
+    setDraft(DRAFT_KEY, { initial, form });
+  }, [initial, form]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
