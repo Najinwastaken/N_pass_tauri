@@ -1,6 +1,6 @@
 [package]
 name = "n-pass"
-version = "0.3.4"
+version = "0.3.5"
 description = "Local encrypted password manager"
 authors = ["Najin"]
 edition = "2021"

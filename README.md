@@ -172,7 +172,11 @@ the previous password.
   put there.
 - **Open URL**: the ↗ button (or a right-click on the link) opens the
   site in your browser. Write the address however you like — `discord.com`,
-  `www.discord.com` or the full `https://…`; N-Pass sorts it out.
+  `www.discord.com` or the full `https://…`; N-Pass sorts it out. The list
+  displays links in a short form (`discord.com/invite/abc`) so the domain
+  and path get the space instead of `https://www.`, while copying returns
+  the exact address you saved — the scheme matters for routers and
+  internal services.
 - **Drag & drop** reordering with an insertion line; **Esc** cancels.
 - **Auto-lock** after inactivity (default 10 min) and optionally on
   window minimize. Locking wipes the encryption key and the decrypted
