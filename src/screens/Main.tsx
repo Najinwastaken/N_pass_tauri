@@ -158,7 +158,7 @@ export function Main({ profile, onLocked }: Props) {
         </div>
       </aside>
       <main className="content fade-in" key={section}>
-        {section === "passwords" && <PasswordsView />}
+        {section === "passwords" && <PasswordsView profile={profile} />}
         {section === "passkeys" && <KeysView />}
         {section === "cards" && <CardsView />}
         {section === "notes" && <NotesView />}

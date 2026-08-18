@@ -80,6 +80,9 @@ export interface Settings {
   backup_on_save: boolean;
   theme: string;
   language: string;
+  /** Categories in the order the user arranged them; the rest follow
+      alphabetically. Stored in the vault so it travels with a copy. */
+  category_order: string[];
 }
 
 export type EntryKind = "passwords" | "cards" | "notes" | "keys";
@@ -131,6 +134,8 @@ export const api = {
   deleteKey: (id: string) => invoke<void>("delete_key", { id }),
   revealKey: (id: string) => invoke<string>("reveal_key", { id }),
 
+  renameCategory: (from: string, to: string) =>
+    invoke<number>("rename_category", { from, to }),
   reorderEntries: (kind: EntryKind, orderedIds: string[]) =>
     invoke<void>("reorder_entries", { kind, orderedIds }),
 

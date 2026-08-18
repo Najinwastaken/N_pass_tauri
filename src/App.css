@@ -1008,18 +1008,22 @@ textarea.invalid {
   background: var(--hover);
 }
 
-.entry.dragging {
+.entry.dragging,
+.group-header.dragging {
   opacity: 0.45;
 }
 
 /* Insertion indicator: an accent line in the gap where the dragged item
    would land on drop. */
-.entry {
+.entry,
+.group-header {
   position: relative;
 }
 
 .entry.drop-above::after,
-.entry.drop-below::after {
+.entry.drop-below::after,
+.group-header.drop-above::after,
+.group-header.drop-below::after {
   content: "";
   position: absolute;
   left: 10px;
@@ -1031,11 +1035,13 @@ textarea.invalid {
   pointer-events: none;
 }
 
-.entry.drop-above::after {
+.entry.drop-above::after,
+.group-header.drop-above::after {
   top: -2px;
 }
 
-.entry.drop-below::after {
+.entry.drop-below::after,
+.group-header.drop-below::after {
   bottom: -2px;
 }
 
@@ -1681,6 +1687,30 @@ button.cell-copy svg {
 
 .group-header:hover {
   color: var(--text-muted);
+}
+
+.group-header:hover .drag-handle,
+.group-header:hover .group-menu {
+  opacity: 1;
+}
+
+.group-menu {
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+/* Renaming happens in place: the heading itself becomes the field, so the
+   category never leaves its position while it is being renamed. */
+.group-rename {
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: var(--text);
+  background: var(--panel-strong);
+  border: 1px solid var(--accent);
+  border-radius: var(--r-sm);
+  padding: 3px 8px;
+  min-width: 140px;
 }
 
 .group-count {

@@ -7,9 +7,14 @@ import { useEffect, useRef, useState } from "react";
 import { api, EntryKind } from "../api";
 
 export function useDragReorder<T extends { id: string }>(
-  kind: EntryKind,
+  /** Which vault list to persist to, or null when the caller stores the
+      order itself — categories live in the vault settings, not as a list
+      of entries. */
+  kind: EntryKind | null,
   items: T[],
   setItems: (items: T[]) => void,
+  /** Veto a drop, e.g. a row may not leave its own category group. */
+  canDrop?: (from: number, to: number) => boolean,
 ) {
   const dragIndex = useRef<number | null>(null);
   const [dragging, setDragging] = useState<string | null>(null);
@@ -97,10 +102,12 @@ export function useDragReorder<T extends { id: string }>(
     const [moved] = next.splice(from, 1);
     next.splice(gap > from ? gap - 1 : gap, 0, moved);
     setItems(next);
-    void api.reorderEntries(
-      kind,
-      next.map((i) => i.id),
-    );
+    if (kind) {
+      void api.reorderEntries(
+        kind,
+        next.map((i) => i.id),
+      );
+    }
   }
 
   function onDragStart(e: React.DragEvent, index: number) {
@@ -120,6 +127,11 @@ export function useDragReorder<T extends { id: string }>(
     e.dataTransfer.dropEffect = "move";
     const from = dragIndex.current;
     if (from === null) return;
+    // A vetoed target shows no line at all, so nothing suggests it would work.
+    if (canDrop && !canDrop(from, index)) {
+      if (dropGapRef.current !== null) setGap(null);
+      return;
+    }
 
     // Above or below the hovered row, depending on cursor position.
     const rect = e.currentTarget.getBoundingClientRect();

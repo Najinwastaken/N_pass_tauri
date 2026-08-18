@@ -560,6 +560,34 @@ mod tests {
     }
 
     #[test]
+    fn rename_in_order_keeps_the_slot() {
+        let mut order = vec!["a".to_string(), "dev".to_string(), "z".to_string()];
+        rename_in_order(&mut order, "dev", "Work Dev");
+        assert_eq!(order, vec!["a", "Work Dev", "z"]);
+    }
+
+    #[test]
+    fn rename_in_order_drops_the_slot_when_merging() {
+        let mut order = vec!["dev".to_string(), "work".to_string()];
+        rename_in_order(&mut order, "dev", "work");
+        assert_eq!(order, vec!["work"]);
+    }
+
+    #[test]
+    fn rename_in_order_drops_the_slot_when_clearing() {
+        let mut order = vec!["a".to_string(), "dev".to_string()];
+        rename_in_order(&mut order, "dev", "");
+        assert_eq!(order, vec!["a"]);
+    }
+
+    #[test]
+    fn rename_in_order_ignores_an_unarranged_category() {
+        let mut order = vec!["a".to_string()];
+        rename_in_order(&mut order, "dev", "Work Dev");
+        assert_eq!(order, vec!["a"]);
+    }
+
+    #[test]
     fn apply_order_reorders_to_given_sequence() {
         let id = ids(3);
         let mut items = vec![Item(id[0]), Item(id[1]), Item(id[2])];
@@ -599,6 +627,49 @@ mod tests {
 }
 
 // ------------------------------------------------------------------ reorder
+
+/// Rename a category across every password that carries it. Doing this in
+/// Rust keeps it to a single vault write and, more importantly, means no
+/// passwords have to travel to the webview just to edit one field.
+/// An empty `to` clears the category. Renaming onto an existing name
+/// merges the two. Returns how many entries changed.
+#[tauri::command]
+pub fn rename_category(
+    state: State<'_, AppState>,
+    from: String,
+    to: String,
+) -> Result<usize, String> {
+    let from = from.trim().to_string();
+    let to = to.trim().to_string();
+    if from.is_empty() {
+        return Err("empty_source".into());
+    }
+    mutate(&state, |vault| {
+        let mut changed = 0;
+        for entry in vault.data.passwords.iter_mut() {
+            if entry.category.trim() == from {
+                entry.category = to.clone();
+                changed += 1;
+            }
+        }
+        rename_in_order(&mut vault.data.settings.category_order, &from, &to);
+        Ok(changed)
+    })
+}
+
+/// Carry a category's arranged position over to its new name, so renaming
+/// does not send it to the end of the list. An empty `to` drops it; a name
+/// that is already in the list means the two merged, so the old slot goes.
+fn rename_in_order(order: &mut Vec<String>, from: &str, to: &str) {
+    let Some(slot) = order.iter().position(|name| name == from) else {
+        return;
+    };
+    if to.is_empty() || order.iter().any(|name| name == to) {
+        order.remove(slot);
+    } else {
+        order[slot] = to.to_string();
+    }
+}
 
 /// Persist a drag&drop reorder. `kind` selects the list; `ordered_ids` is
 /// the full id sequence in its new order.

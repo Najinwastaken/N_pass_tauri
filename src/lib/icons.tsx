@@ -193,6 +193,30 @@ export const IconCheck = makeIcon(<path d="M20 6 9 17l-5-5" />);
 
 export const IconChevronDown = makeIcon(<path d="m6 9 6 6 6-6" />);
 
+// Chevrons pointing at each other: everything folds towards the middle.
+export const IconCollapseAll = makeIcon(
+  <>
+    <path d="m7 7 5 5 5-5" />
+    <path d="m7 17 5-5 5 5" />
+  </>,
+);
+
+// ...and away from it.
+export const IconExpandAll = makeIcon(
+  <>
+    <path d="m7 11 5-5 5 5" />
+    <path d="m7 13 5 5 5-5" />
+  </>,
+);
+
+export const IconDots = makeIcon(
+  <>
+    <circle cx="12" cy="5" r="1.4" />
+    <circle cx="12" cy="12" r="1.4" />
+    <circle cx="12" cy="19" r="1.4" />
+  </>,
+);
+
 export const IconSearch = makeIcon(
   <>
     <circle cx="11" cy="11" r="7" />

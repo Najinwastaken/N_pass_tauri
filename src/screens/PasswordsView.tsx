@@ -6,7 +6,10 @@ import { useContextMenu } from "../lib/ContextMenu";
 import { StrengthMeter } from "../lib/strength";
 import {
   IconChevronDown,
+  IconCollapseAll,
   IconCopy,
+  IconDots,
+  IconExpandAll,
   IconExternal,
   IconEye,
   IconEyeOff,
@@ -28,15 +31,17 @@ import { SearchBox, useSearch } from "../lib/useSearch";
 import { t } from "../lib/i18n";
 import { useListScroll } from "../lib/useListScroll";
 import { clearDraft, getDraft, setDraft } from "../lib/drafts";
+import { categoryKey, loadCollapsed, saveCollapsed } from "../lib/viewPrefs";
 
 /** Key of the in-memory draft for this section (see lib/drafts.ts). */
 const DRAFT_KEY = "passwords";
 type Draft = { initial: PasswordMeta | null; form: PasswordInput };
 
-/** Which category is selected and which groups are folded — kept for the
-    session so switching tabs does not reset the view. */
+/** Which category is selected — kept for the session so switching tabs
+    does not reset the view. Folded groups outlive the session and live in
+    viewPrefs instead. */
 const VIEW_KEY = "passwords-view";
-type ViewState = { filter: string; collapsed: string[] };
+type ViewState = { filter: string };
 
 const EMPTY: PasswordInput = {
   title: "",
@@ -48,7 +53,7 @@ const EMPTY: PasswordInput = {
   notes: "",
 };
 
-export function PasswordsView() {
+export function PasswordsView({ profile }: { profile: string }) {
   const [entries, setEntries] = useState<PasswordMeta[]>([]);
   // An unfinished form is reopened when the user comes back to this tab.
   const [editing, setEditing] = useState<PasswordMeta | "new" | null>(() => {
@@ -58,7 +63,16 @@ export function PasswordsView() {
   // Coming back from the form should land where the user was.
   const rememberScroll = useListScroll(editing !== null, entries);
   const [revealed, setRevealed] = useState<Record<string, string>>({});
-  const { dragProps, handleProps } = useDragReorder("passwords", entries, setEntries);
+  const { dragProps, handleProps } = useDragReorder(
+    "passwords",
+    entries,
+    setEntries,
+    // A row may only be reordered inside its own category. Dropping it into
+    // another group would look like a move, but the category is a field
+    // rather than a position, so the row would spring straight back.
+    (from, to) =>
+      !grouped || entries[from]?.category.trim() === entries[to]?.category.trim(),
+  );
   const { menu, openMenu } = useContextMenu();
   useClearCellSelection();
   const { query, setQuery, filtered, searching } = useSearch(entries, (e) => [
@@ -72,16 +86,44 @@ export function PasswordsView() {
 
   const savedView = getDraft<ViewState>(VIEW_KEY);
   const [filter, setFilter] = useState(savedView?.filter ?? "");
-  const [collapsed, setCollapsed] = useState<string[]>(savedView?.collapsed ?? []);
   useEffect(() => {
-    setDraft(VIEW_KEY, { filter, collapsed });
-  }, [filter, collapsed]);
+    setDraft(VIEW_KEY, { filter });
+  }, [filter]);
 
-  /** Categories are just the values entries carry — nothing to manage. */
+  // Folded groups are held as fingerprints, which is also what goes to disk.
+  const [collapsed, setCollapsed] = useState<string[]>(() => loadCollapsed(profile));
+
+  // The arranged category order lives in the vault settings, so it travels
+  // with a copied vault instead of staying behind on this machine.
+  const [order, setOrder] = useState<string[]>([]);
+  useEffect(() => {
+    void api.getSettings().then((s) => setOrder(s.category_order ?? []));
+  }, []);
+
+  const [draggingCategory, setDraggingCategory] = useState(false);
+  const [renaming, setRenaming] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState("");
+
+  /** Categories are just the values entries carry — nothing to manage.
+      Arranged ones lead in the order the user set, the rest follow
+      alphabetically, so only what was deliberately placed has to be stored. */
   const categories = useMemo(() => {
     const used = new Set(entries.map((e) => e.category.trim()).filter(Boolean));
-    return [...used].sort((a, b) => a.localeCompare(b));
-  }, [entries]);
+    const arranged = order.filter((name) => used.has(name));
+    const rest = [...used]
+      .filter((name) => !arranged.includes(name))
+      .sort((a, b) => a.localeCompare(b));
+    return [...arranged, ...rest];
+  }, [entries, order]);
+
+  // Persist the folded groups, dropping fingerprints of categories that no
+  // longer exist. Guarded on categories being known: on the very first
+  // render the entries have not loaded yet and everything would look stale.
+  useEffect(() => {
+    if (!categories.length) return;
+    const known = new Set([...categories, ""].map(categoryKey));
+    saveCollapsed(profile, collapsed.filter((key) => known.has(key)));
+  }, [profile, collapsed, categories]);
 
   // The last entry of a category can disappear; do not keep filtering by it.
   useEffect(() => {
@@ -104,14 +146,13 @@ export function PasswordsView() {
       if (list) list.push(entry);
       else byCategory.set(key, [entry]);
     }
-    const named = [...byCategory.keys()]
-      .filter(Boolean)
-      .sort((a, b) => a.localeCompare(b))
+    const named = categories
+      .filter((name) => byCategory.has(name))
       .map((name) => ({ name, items: byCategory.get(name) ?? [] }));
     const rest = byCategory.get("");
     // Uncategorised entries come last, under a neutral heading.
     return rest?.length ? [...named, { name: "", items: rest }] : named;
-  }, [grouped, visible]);
+  }, [grouped, visible, categories]);
 
   async function refresh() {
     setEntries(await api.listPasswords());
@@ -138,9 +179,63 @@ export function PasswordsView() {
     await refresh();
   }
 
-  function toggleGroup(name: string) {
+  /** Categories reorder locally and persist into the vault settings — there
+      is no list of category entities, hence no Rust list kind to pass. */
+  const categoryItems = useMemo(() => categories.map((name) => ({ id: name })), [categories]);
+  const catDrag = useDragReorder(null, categoryItems, (next) => {
+    const names = next.map((i) => i.id);
+    setOrder(names);
+    void (async () => {
+      const settings = await api.getSettings();
+      await api.updateSettings({ ...settings, category_order: names });
+    })();
+  });
+
+  /** The catch-all group is not a category: it cannot be dragged, but it is
+      still a target so a category can be dropped at the very end. */
+  function categoryHeaderProps(name: string, isOther: boolean) {
+    const index = isOther ? categories.length : categories.indexOf(name);
+    const props = catDrag.dragProps(index, name);
+    return {
+      ...props,
+      draggable: isOther ? false : props.draggable,
+      onDragStart: (e: React.DragEvent) => {
+        setDraggingCategory(true);
+        props.onDragStart(e);
+      },
+      onDragEnd: () => {
+        setDraggingCategory(false);
+        props.onDragEnd();
+      },
+    };
+  }
+
+  /** Renaming rewrites the field on every entry of the category. Rust does it
+      in one pass and one save, so no passwords have to come out here. */
+  async function commitRename(from: string) {
+    const to = renameValue.trim();
+    setRenaming(null);
+    if (!to || to === from) return;
+    const merges = categories.some((name) => name !== from && name === to);
+    if (merges && !window.confirm(t("categoryMergeConfirm", { from, to }))) return;
+    await api.renameCategory(from, to);
+    // The fingerprint changes with the name; carry the folded state over.
     setCollapsed((list) =>
-      list.includes(name) ? list.filter((n) => n !== name) : [...list, name],
+      list.map((key) => (key === categoryKey(from) ? categoryKey(to) : key)),
+    );
+    // Rust moved the arranged position onto the new name; pick it back up.
+    const settings = await api.getSettings();
+    setOrder(settings.category_order ?? []);
+    await refresh();
+  }
+
+  const allCollapsed =
+    groups.length > 0 && groups.every((g) => collapsed.includes(categoryKey(g.name)));
+
+  function toggleGroup(name: string) {
+    const key = categoryKey(name);
+    setCollapsed((list) =>
+      list.includes(key) ? list.filter((k) => k !== key) : [...list, key],
     );
   }
 
@@ -245,6 +340,17 @@ export function PasswordsView() {
         <div className="view-header-actions">
           {/* Appears by itself once entries carry categories. The label is
               the current category so an active filter is never invisible. */}
+          {grouped && (
+            <button
+              className="icon"
+              title={allCollapsed ? t("expandAll") : t("collapseAll")}
+              onClick={() =>
+                setCollapsed(allCollapsed ? [] : groups.map((g) => categoryKey(g.name)))
+              }
+            >
+              {allCollapsed ? <IconExpandAll size={16} /> : <IconCollapseAll size={16} />}
+            </button>
+          )}
           {categories.length > 0 && (
             <div className={`filter-select ${filter ? "active" : ""}`}>
               <Select
@@ -286,18 +392,65 @@ export function PasswordsView() {
       <ul className="entry-list">
         {grouped
           ? groups.map((group) => {
-              const folded = collapsed.includes(group.name);
+              const folded = collapsed.includes(categoryKey(group.name));
+              const isOther = group.name === "";
+              const drag = categoryHeaderProps(group.name, isOther);
               return [
                 <li
                   key={`group-${group.name}`}
-                  className={`group-header ${folded ? "collapsed" : ""}`}
+                  {...drag}
+                  className={`group-header ${folded ? "collapsed" : ""} ${drag.className}`}
                   onClick={() => toggleGroup(group.name)}
                 >
+                  <span
+                    className={`drag-handle ${isOther ? "invisible" : ""}`}
+                    title={t("dragToReorderCategory")}
+                    onClick={(e) => e.stopPropagation()}
+                    {...(isOther ? {} : catDrag.handleProps(group.name))}
+                  >
+                    <IconGrip size={13} />
+                  </span>
                   <IconChevronDown size={13} className="group-chevron" />
-                  {group.name || t("categoryOther")}
+                  {renaming === group.name ? (
+                    <input
+                      className="group-rename"
+                      autoFocus
+                      value={renameValue}
+                      onClick={(e) => e.stopPropagation()}
+                      onChange={(e) => setRenameValue(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") void commitRename(group.name);
+                        if (e.key === "Escape") setRenaming(null);
+                      }}
+                      onBlur={() => setRenaming(null)}
+                    />
+                  ) : (
+                    group.name || t("categoryOther")
+                  )}
                   <span className="group-count muted">{group.items.length}</span>
+                  {!isOther && (
+                    <button
+                      className="icon group-menu"
+                      title={t("renameCategory")}
+                      onClick={(e) =>
+                        openMenu(e, [
+                          {
+                            label: t("renameCategory"),
+                            action: () => {
+                              setRenameValue(group.name);
+                              setRenaming(group.name);
+                            },
+                          },
+                        ])
+                      }
+                    >
+                      <IconDots size={14} />
+                    </button>
+                  )}
                 </li>,
-                ...(folded ? [] : group.items.map(renderRow)),
+                // While a category is on the move the list shows headers only:
+                // you are arranging categories, not rows.
+                ...(folded || draggingCategory ? [] : group.items.map(renderRow)),
               ];
             })
           : visible.map(renderRow)}

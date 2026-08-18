@@ -151,6 +151,7 @@ pub fn run() {
             commands::entries::delete_key,
             commands::entries::reveal_key,
             commands::entries::reorder_entries,
+            commands::entries::rename_category,
             commands::settings::get_settings,
             commands::settings::update_settings,
             commands::settings::pick_backup_dir,

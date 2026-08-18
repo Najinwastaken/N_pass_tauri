@@ -95,6 +95,19 @@ const DICT = {
   // lists
   searchPh: ["Search…  (Ctrl+F)", "Поиск…  (Ctrl+F)", "Пошук…  (Ctrl+F)"],
   dragToReorder: ["Drag to reorder", "Перетащите, чтобы изменить порядок", "Перетягніть, щоб змінити порядок"],
+  dragToReorderCategory: [
+    "Drag to reorder categories",
+    "Перетащите, чтобы изменить порядок категорий",
+    "Перетягніть, щоб змінити порядок категорій",
+  ],
+  collapseAll: ["Collapse all", "Свернуть все", "Згорнути всі"],
+  expandAll: ["Expand all", "Развернуть все", "Розгорнути всі"],
+  renameCategory: ["Rename category", "Переименовать категорию", "Перейменувати категорію"],
+  categoryMergeConfirm: [
+    'Category "{to}" already exists. Move all entries of "{from}" into it?',
+    'Категория "{to}" уже есть. Перенести в неё все записи из "{from}"?',
+    'Категорія "{to}" вже є. Перенести до неї всі записи з "{from}"?',
+  ],
   openUrl: ["Open URL", "Открыть ссылку", "Відкрити посилання"],
   copyUrl: ["Copy URL", "Копировать ссылку", "Копіювати посилання"],
   copyPassword: ["Copy password", "Копировать пароль", "Копіювати пароль"],

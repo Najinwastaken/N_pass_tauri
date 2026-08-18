@@ -94,6 +94,12 @@ pub struct Settings {
     /// UI language: "en" | "ru" | "uk"
     #[serde(default = "default_language")]
     pub language: String,
+    /// Category names in the order the user arranged them. Categories not
+    /// listed here follow alphabetically, so only what was deliberately
+    /// placed needs storing. Lives in the vault rather than in the webview
+    /// so it travels with a portable copy.
+    #[serde(default)]
+    pub category_order: Vec<String>,
 }
 
 fn default_language() -> String {
@@ -122,6 +128,7 @@ impl Default for Settings {
             backup_on_save: false,
             theme: default_theme(),
             language: default_language(),
+            category_order: Vec::new(),
         }
     }
 }
