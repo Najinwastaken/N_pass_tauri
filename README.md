@@ -185,7 +185,12 @@ the previous password.
   there is no list to create or maintain, and a category disappears by
   itself once no entry carries it. The list then groups by category under
   foldable headings, and a dropdown next to the search box narrows it to
-  one of them.
+  one of them. Drag a heading by its grip to put the categories in the
+  order you want, rename a whole category from the `...` menu on its
+  heading (every entry in it follows, in one step), and fold or unfold all
+  of them with the button next to the dropdown. Which groups you left
+  folded is remembered between runs, and the order you arranged is kept
+  inside the vault itself, so it travels with a copied vault.
 - **Drag & drop** reordering with an insertion line; **Esc** cancels.
 - **Auto-lock** after inactivity (default 10 min) and optionally on
   window minimize. Locking wipes the encryption key and the decrypted

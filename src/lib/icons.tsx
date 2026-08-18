@@ -193,19 +193,26 @@ export const IconCheck = makeIcon(<path d="M20 6 9 17l-5-5" />);
 
 export const IconChevronDown = makeIcon(<path d="m6 9 6 6 6-6" />);
 
-// Chevrons pointing at each other: everything folds towards the middle.
+// Two arrows closing onto a line: the groups fold down to their headings.
 export const IconCollapseAll = makeIcon(
   <>
-    <path d="m7 7 5 5 5-5" />
-    <path d="m7 17 5-5 5 5" />
+    <path d="M5 12h14" />
+    <path d="M12 3v6" />
+    <path d="m9 6 3 3 3-3" />
+    <path d="M12 21v-6" />
+    <path d="m9 18 3-3 3 3" />
   </>,
 );
 
-// ...and away from it.
-export const IconExpandAll = makeIcon(
+// Shown once everything is folded, where the offer is to see the list again.
+export const IconList = makeIcon(
   <>
-    <path d="m7 11 5-5 5 5" />
-    <path d="m7 13 5 5 5-5" />
+    <path d="M4 6h2" />
+    <path d="M4 12h2" />
+    <path d="M4 18h2" />
+    <path d="M9.5 6H20" />
+    <path d="M9.5 12H20" />
+    <path d="M9.5 18H20" />
   </>,
 );
 

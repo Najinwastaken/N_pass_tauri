@@ -6,14 +6,14 @@ import { useContextMenu } from "../lib/ContextMenu";
 import { StrengthMeter } from "../lib/strength";
 import {
   IconChevronDown,
-  IconCollapseAll,
   IconCopy,
   IconDots,
-  IconExpandAll,
+  IconCollapseAll,
   IconExternal,
   IconEye,
   IconEyeOff,
   IconGrip,
+  IconList,
   IconPencil,
   IconPlus,
   IconRefresh,
@@ -100,7 +100,21 @@ export function PasswordsView({ profile }: { profile: string }) {
     void api.getSettings().then((s) => setOrder(s.category_order ?? []));
   }, []);
 
-  const [draggingCategory, setDraggingCategory] = useState(false);
+  // While a category is being dragged the list shows headers only. This is
+  // done with a class rather than by dropping the rows from the tree on
+  // purpose: rebuilding the DOM in the middle of a drag is what breaks the
+  // browser's drag state, and the rows would come back moved anyway. No
+  // React state is involved, so nothing here can wedge the list.
+  useEffect(() => {
+    const stop = () => document.body.classList.remove("arranging-categories");
+    document.addEventListener("drop", stop);
+    document.addEventListener("dragend", stop);
+    return () => {
+      stop();
+      document.removeEventListener("drop", stop);
+      document.removeEventListener("dragend", stop);
+    };
+  }, []);
   const [renaming, setRenaming] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
 
@@ -184,6 +198,9 @@ export function PasswordsView({ profile }: { profile: string }) {
   const categoryItems = useMemo(() => categories.map((name) => ({ id: name })), [categories]);
   const catDrag = useDragReorder(null, categoryItems, (next) => {
     const names = next.map((i) => i.id);
+    // The reorder moves this header in the DOM and a moved node never gets
+    // its dragend, so the rows are brought back here too.
+    document.body.classList.remove("arranging-categories");
     setOrder(names);
     void (async () => {
       const settings = await api.getSettings();
@@ -200,11 +217,11 @@ export function PasswordsView({ profile }: { profile: string }) {
       ...props,
       draggable: isOther ? false : props.draggable,
       onDragStart: (e: React.DragEvent) => {
-        setDraggingCategory(true);
+        document.body.classList.add("arranging-categories");
         props.onDragStart(e);
       },
       onDragEnd: () => {
-        setDraggingCategory(false);
+        document.body.classList.remove("arranging-categories");
         props.onDragEnd();
       },
     };
@@ -348,7 +365,7 @@ export function PasswordsView({ profile }: { profile: string }) {
                 setCollapsed(allCollapsed ? [] : groups.map((g) => categoryKey(g.name)))
               }
             >
-              {allCollapsed ? <IconExpandAll size={16} /> : <IconCollapseAll size={16} />}
+              {allCollapsed ? <IconList size={16} /> : <IconCollapseAll size={16} />}
             </button>
           )}
           {categories.length > 0 && (
@@ -448,9 +465,7 @@ export function PasswordsView({ profile }: { profile: string }) {
                     </button>
                   )}
                 </li>,
-                // While a category is on the move the list shows headers only:
-                // you are arranging categories, not rows.
-                ...(folded || draggingCategory ? [] : group.items.map(renderRow)),
+                ...(folded ? [] : group.items.map(renderRow)),
               ];
             })
           : visible.map(renderRow)}

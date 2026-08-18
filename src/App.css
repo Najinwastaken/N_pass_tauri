@@ -1689,6 +1689,12 @@ button.cell-copy svg {
   color: var(--text-muted);
 }
 
+/* Arranging categories: the rows step out of the way without leaving the
+   page, so the browser's drag is never disturbed by a DOM rebuild. */
+body.arranging-categories .entry-list > .entry {
+  display: none;
+}
+
 .group-header:hover .drag-handle,
 .group-header:hover .group-menu {
   opacity: 1;
