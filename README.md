@@ -86,6 +86,9 @@ also means **backing up = copying one file**.
   vault automatically after every change. The app itself never touches
   the network.
 - Dark and light themes; English, Russian and Ukrainian interface.
+- The window opens sized for your monitor on the first run, then
+  remembers the size and position you give it (Settings → Reset window
+  brings the default back).
 - Built-in password **generator** (length, character classes) — plus a
   one-click ✨ button right in the entry form that fills the password
   field using your last generator settings.
