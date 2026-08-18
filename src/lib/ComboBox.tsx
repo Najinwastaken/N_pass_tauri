@@ -82,6 +82,10 @@ export function ComboBox({ value, options, onChange, placeholder }: Props) {
                 role="option"
                 aria-selected={current}
                 className={`select-option ${current ? "selected" : ""}`}
+                // The field lives inside a <label>, and a click anywhere in
+                // a label focuses its input — which would reopen the list
+                // right after picking. Keep the focus where it is.
+                onMouseDown={(e) => e.preventDefault()}
                 onClick={() => {
                   onChange(option);
                   setOpen(false);

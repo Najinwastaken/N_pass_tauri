@@ -57,6 +57,7 @@ export function Select({ value, options, onChange, placeholder = "—" }: Props)
               role="option"
               aria-selected={o.value === value}
               className={`select-option ${o.value === value ? "selected" : ""}`}
+              onMouseDown={(e) => e.preventDefault()}
               onClick={() => {
                 onChange(o.value);
                 setOpen(false);
