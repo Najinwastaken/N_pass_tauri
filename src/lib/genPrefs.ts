@@ -49,3 +49,18 @@ export function loadGenReveal(): boolean {
 export function saveGenReveal(revealed: boolean) {
   localStorage.setItem(REVEAL_KEY, revealed ? "1" : "0");
 }
+
+// Whether the password field of the NEW-entry form starts revealed.
+// Only that one field remembers the choice: an exposed password is one
+// click away from being regenerated, while an issued key or a card CVV
+// cannot be reissued cheaply — those always start masked, as does every
+// existing entry opened for editing.
+const NEW_ENTRY_REVEAL_KEY = "newEntryReveal";
+
+export function loadNewEntryReveal(): boolean {
+  return localStorage.getItem(NEW_ENTRY_REVEAL_KEY) === "1";
+}
+
+export function saveNewEntryReveal(revealed: boolean) {
+  localStorage.setItem(NEW_ENTRY_REVEAL_KEY, revealed ? "1" : "0");
+}

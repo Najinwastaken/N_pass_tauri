@@ -18,7 +18,7 @@ import {
   IconSparkles,
   IconTrash,
 } from "../lib/icons";
-import { loadGenOptions } from "../lib/genPrefs";
+import { loadGenOptions, loadNewEntryReveal, saveNewEntryReveal } from "../lib/genPrefs";
 import { Cell } from "../lib/Cell";
 import { SearchBox, useSearch } from "../lib/useSearch";
 import { t } from "../lib/i18n";
@@ -187,7 +187,9 @@ function EntryForm({
   onCancel: () => void;
 }) {
   const [form, setForm] = useState<PasswordInput>(EMPTY);
-  const [showPw, setShowPw] = useState(false);
+  // A new entry starts with whatever the user last chose; an existing
+  // one always starts masked.
+  const [showPw, setShowPw] = useState(() => initial === null && loadNewEntryReveal());
   const [regenerated, setRegenerated] = useState(false);
   const [shake, setShake] = useState(0);
   const [missing, setMissing] = useState<string[]>([]);
@@ -215,6 +217,15 @@ function EntryForm({
       setLoaded(true);
     })();
   }, [initial]);
+
+  /** Only the new-entry form remembers the reveal choice. */
+  function toggleShowPw() {
+    setShowPw((visible) => {
+      const next = !visible;
+      if (initial === null) saveNewEntryReveal(next);
+      return next;
+    });
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -291,7 +302,7 @@ function EntryForm({
               type="button"
               className="icon"
               title={showPw ? t("hide") : t("show")}
-              onClick={() => setShowPw((v) => !v)}
+              onClick={toggleShowPw}
             >
               {showPw ? <IconEyeOff size={16} /> : <IconEye size={16} />}
             </button>

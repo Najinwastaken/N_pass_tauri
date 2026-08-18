@@ -185,6 +185,13 @@ the previous password.
 - The window opens sized for your monitor on the first run, then
   remembers the size and position you give it (Settings → Reset window
   brings the default back).
+- **Secrets stay masked.** A value is shown only when you click the eye,
+  and every existing entry opens masked again — revealing is always your
+  explicit choice. The one exception is the password field of a *new*
+  entry: it remembers whether you last left it visible. The reason is the
+  cost of a slip — an exposed password is one click from being
+  regenerated, while an issued key or a card CVV is not, so those always
+  start hidden. The generator page has its own eye, also remembered.
 - Built-in password **generator** (length, character classes) — plus a
   one-click ✨ button right in the entry form that fills the password
   field using your last generator settings.
