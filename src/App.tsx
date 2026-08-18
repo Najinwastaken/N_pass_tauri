@@ -4,6 +4,7 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import { api } from "./api";
 import { applyTheme, cachedTheme } from "./lib/theme";
 import { clearDrafts } from "./lib/drafts";
+import { useSmoothScroll } from "./lib/useSmoothScroll";
 import { t } from "./lib/i18n";
 import { IconX } from "./lib/icons";
 import { Titlebar } from "./Titlebar";
@@ -45,6 +46,7 @@ export default function App() {
   const [profiles, setProfiles] = useState<string[]>([]);
   const maximized = useMaximized();
   const [toast, setToast] = useState<string | null>(null);
+  useSmoothScroll();
 
   // Language switches re-render the whole tree (t() reads a module var).
   const [, setLangTick] = useState(0);
