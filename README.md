@@ -181,6 +181,11 @@ the previous password.
   and path get the space instead of `https://www.`, while copying returns
   the exact address you saved — the scheme matters for routers and
   internal services.
+- **Categories** for passwords. Type one into an entry and it exists —
+  there is no list to create or maintain, and a category disappears by
+  itself once no entry carries it. The list then groups by category under
+  foldable headings, and a dropdown next to the search box narrows it to
+  one of them.
 - **Drag & drop** reordering with an insertion line; **Esc** cancels.
 - **Auto-lock** after inactivity (default 10 min) and optionally on
   window minimize. Locking wipes the encryption key and the decrypted
