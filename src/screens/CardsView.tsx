@@ -286,8 +286,8 @@ function CardForm({
           />
         </label>
         <div className="form-row">
-          <label>
-            {t("fProvider")}
+          <div className="field">
+            <span>{t("fProvider")}</span>
             <Select
               value={form.provider}
               onChange={(provider) => setForm((f) => ({ ...f, provider }))}
@@ -296,7 +296,7 @@ function CardForm({
                 ...PROVIDERS.map((p) => ({ value: p, label: p })),
               ]}
             />
-          </label>
+          </div>
           <label>
             {t("fCardholder")}
             <input value={form.cardholder} onChange={set("cardholder")} onKeyDown={smartCopy()} />

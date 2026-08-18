@@ -494,7 +494,8 @@ textarea.invalid {
   gap: 15px;
 }
 
-.form label {
+.form label,
+.form .field {
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -522,7 +523,8 @@ textarea.invalid {
   gap: 14px;
 }
 
-.form-row label {
+.form-row label,
+.form-row .field {
   flex: 1;
 }
 

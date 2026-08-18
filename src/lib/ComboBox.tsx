@@ -57,6 +57,9 @@ export function ComboBox({ value, options, onChange, placeholder }: Props) {
             show(false);
           }}
           onFocus={() => show(true)}
+          // Focus fires only once, so a click on the already focused field
+          // would otherwise do nothing.
+          onClick={() => show(true)}
         />
         {options.length > 0 && (
           <button
@@ -82,11 +85,13 @@ export function ComboBox({ value, options, onChange, placeholder }: Props) {
                 role="option"
                 aria-selected={current}
                 className={`select-option ${current ? "selected" : ""}`}
-                // The field lives inside a <label>, and a click anywhere in
-                // a label focuses its input — which would reopen the list
-                // right after picking. Keep the focus where it is.
+                // Picking must not move focus into the field: that would
+                // reopen the list through the focus handler. preventDefault
+                // on the click also cancels a <label>'s forwarding, should
+                // such a widget ever end up inside one.
                 onMouseDown={(e) => e.preventDefault()}
-                onClick={() => {
+                onClick={(e) => {
+                  e.preventDefault();
                   onChange(option);
                   setOpen(false);
                 }}

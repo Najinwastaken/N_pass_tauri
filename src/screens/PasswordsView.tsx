@@ -452,15 +452,15 @@ function EntryForm({
             onKeyDown={smartCopy()}
           />
         </label>
-        <label>
-          {t("fCategory")}
+        <div className="field">
+          <span>{t("fCategory")}</span>
           <ComboBox
             value={form.category}
             options={categories}
             onChange={(category) => setForm((f) => ({ ...f, category }))}
             placeholder={t("categoryPh")}
           />
-        </label>
+        </div>
         <label>
           {t("fUrl")}
           <input
