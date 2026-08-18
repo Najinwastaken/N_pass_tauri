@@ -155,6 +155,7 @@ pub fn run() {
             commands::settings::update_settings,
             commands::settings::pick_backup_dir,
             commands::settings::backup_now,
+            commands::settings::reset_window,
             commands::misc::generate_password,
             commands::misc::copy_text,
             commands::misc::copy_secret,

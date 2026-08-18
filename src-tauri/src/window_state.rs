@@ -81,6 +81,16 @@ pub fn restore_or_default<R: Runtime>(window: &WebviewWindow<R>) {
     let _ = window.center();
 }
 
+/// Forget the remembered geometry and go back to the adaptive default
+/// (Settings -> Reset window).
+pub fn reset<R: Runtime>(window: &WebviewWindow<R>) {
+    if let Some(path) = state_path() {
+        let _ = std::fs::remove_file(path);
+    }
+    let _ = window.unmaximize();
+    restore_or_default(window);
+}
+
 /// Persist current geometry (called on close). When the window is
 /// maximized, only the flag is updated so the remembered "restored" size
 /// survives maximize/close cycles.

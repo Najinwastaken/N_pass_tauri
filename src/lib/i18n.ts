@@ -164,6 +164,13 @@ const DICT = {
   light: ["Light", "Светлая", "Світла"],
   dark: ["Dark", "Тёмная", "Темна"],
   language: ["Language", "Язык", "Мова"],
+  resetWindow: ["Reset window", "Сбросить окно", "Скинути вікно"],
+  resetWindowHint: [
+    "Restore the default window size and position",
+    "Вернуть размер и позицию окна по умолчанию",
+    "Повернути розмір і позицію вікна за замовчуванням",
+  ],
+  resetBtn: ["Reset", "Сбросить", "Скинути"],
   backupFolder: ["Backup folder", "Папка бэкапа", "Тека бекапу"],
   backupHint: [
     "Point it at a synced folder (Google Drive, Dropbox…) for cloud backup",

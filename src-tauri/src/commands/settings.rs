@@ -43,6 +43,13 @@ pub async fn pick_backup_dir(app: AppHandle) -> Result<Option<String>, String> {
         .map(|p| p.to_string_lossy().to_string()))
 }
 
+/// Settings -> Reset window: forget the remembered geometry and apply
+/// the adaptive default size, centered.
+#[tauri::command]
+pub fn reset_window(window: tauri::WebviewWindow) {
+    crate::window_state::reset(&window);
+}
+
 /// Copy the encrypted vault into the configured backup folder right now.
 /// Unlike the on-save copy this one surfaces errors to the user.
 #[tauri::command]

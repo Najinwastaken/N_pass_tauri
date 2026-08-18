@@ -137,6 +137,7 @@ export const api = {
     invoke<void>("update_settings", { settings }),
   pickBackupDir: () => invoke<string | null>("pick_backup_dir"),
   backupNow: () => invoke<void>("backup_now"),
+  resetWindow: () => invoke<void>("reset_window"),
 
   generatePassword: (opts: GeneratorOptions) =>
     invoke<string>("generate_password", { ...opts }),

@@ -123,6 +123,16 @@ export function SettingsView({ theme, onThemeChange }: Props) {
           </div>
         </div>
 
+        <div className="settings-row" style={{ cursor: "default" }}>
+          <div>
+            <div>{t("resetWindow")}</div>
+            <div className="muted small">{t("resetWindowHint")}</div>
+          </div>
+          <button type="button" className="secondary" onClick={() => void api.resetWindow()}>
+            {t("resetBtn")}
+          </button>
+        </div>
+
         <BackupSection settings={settings} onSave={(s) => void save(s)} />
 
         <ChangePassword />
