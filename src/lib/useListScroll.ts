@@ -4,9 +4,16 @@
 
 import { useEffect, useRef } from "react";
 
-/** The scrolling container of the main pane (see .content in App.css). */
+/**
+ * The element that actually scrolls. The pane itself does not: the header
+ * stays put and the list below it is the scrolling region (see App.css),
+ * so the position lives on the list, not on `.content`.
+ */
 function scroller(): HTMLElement | null {
-  return document.querySelector<HTMLElement>(".content");
+  return (
+    document.querySelector<HTMLElement>(".view > .entry-list") ??
+    document.querySelector<HTMLElement>(".content")
+  );
 }
 
 /**

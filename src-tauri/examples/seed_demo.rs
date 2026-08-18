@@ -1,7 +1,7 @@
 //! Dev helper: creates a `Demo.npass` vault filled with sample entries of
-//! every type (passwords, keys, cards, notes) so
-//! the UI can be tried at a realistic size without typing everything by
-//! hand. Not part of the shipped app (examples are excluded from builds).
+//! every type, enough of them that every list scrolls, so the UI can be
+//! tried at a realistic size without typing anything by hand. Not part of
+//! the shipped app (Cargo excludes examples from the binary).
 //!
 //!     cd src-tauri && cargo run --example seed_demo
 //!
@@ -20,65 +20,132 @@ const SERVICES: &[(&str, &str, &str, &str)] = &[
     ("GitLab", "alex.morgan", "alex@example.com", "gitlab.com"),
     ("Gmail", "alex.morgan", "alex@example.com", "mail.google.com"),
     ("Outlook", "a.morgan", "alex@example.org", "outlook.com"),
+    ("Proton Mail", "alexm", "alex@example.org", "account.proton.me"),
     ("Steam", "alexm_92", "alex@example.com", "store.steampowered.com"),
     ("Epic Games", "alexm", "alex@example.com", "store.epicgames.com"),
     ("GOG", "alexm92", "alex@example.com", "gog.com"),
     ("Battle.net", "alexm#2184", "alex@example.org", "eu.shop.battle.net"),
     ("Ubisoft Connect", "alex.morgan", "alex@example.com", "ubisoft.com"),
+    ("PlayStation Network", "alexm_ps", "alex@example.com", "playstation.com"),
     ("Discord", "alexm", "alex@example.com", "www.discord.com/channels/@me"),
     ("Telegram", "+10000000000", "", "web.telegram.org"),
     ("Slack", "alex.morgan", "alex@example.com", "slack.com"),
+    ("Zoom", "alex.morgan", "alex@example.com", "zoom.us"),
     ("Netflix", "family", "family@example.org", "netflix.com"),
     ("Spotify", "alexm92", "alex@example.com", "open.spotify.com"),
     ("YouTube", "alex.morgan", "alex@example.com", "youtube.com"),
-    ("Reddit", "not_alex", "alex@example.com", "reddit.com"),
     ("Twitch", "alexm_live", "alex@example.com", "twitch.tv"),
+    ("Reddit", "not_alex", "alex@example.com", "reddit.com"),
+    ("X", "alexm92", "alex@example.com", "x.com"),
+    ("LinkedIn", "alex-morgan", "alex@example.org", "linkedin.com/in/alex-morgan"),
     ("Amazon", "alex.morgan", "alex@example.com", "amazon.com"),
+    ("eBay", "alexm92", "alex@example.com", "ebay.com"),
     ("PayPal", "alex.morgan", "alex@example.org", "paypal.com"),
+    ("Booking", "alex.morgan", "alex@example.com", "booking.com"),
+    ("Airbnb", "alex.morgan", "alex@example.com", "airbnb.com"),
+    ("Dropbox", "alexm", "alex@example.com", "dropbox.com"),
+    ("Notion", "alex.morgan", "alex@example.com", "notion.so"),
+    ("Figma", "alexm", "alex@example.org", "figma.com"),
     ("Cloudflare", "alex.morgan", "alex@example.com", "dash.cloudflare.com"),
+    ("DigitalOcean", "alex.morgan", "alex@example.org", "cloud.digitalocean.com"),
 ];
 
 /// title, notes
 const KEYS: &[(&str, &str)] = &[
     ("OpenAI API", "billing account, rotate every 90 days"),
+    ("Anthropic API", "personal experiments"),
     ("Stripe (test)", "sandbox key, safe to share with staging"),
+    ("Stripe (live)", "production, do not paste anywhere"),
     ("Cloudflare API token", "DNS edit only"),
+    ("DigitalOcean token", "read/write, personal droplets"),
     ("AWS access key", "personal sandbox account"),
+    ("GitHub token", "repo + workflow scopes"),
+    ("Telegram bot token", "home automation bot"),
     ("Home Wi-Fi", "guest network is a separate entry"),
     ("Guest Wi-Fi", ""),
+    ("Office Wi-Fi", "changes every quarter"),
     ("Router admin", "http://192.168.1.1"),
     ("NAS admin", "local only, no port forwarding"),
+    ("Printer admin", "192.168.1.30"),
     ("SSH passphrase (laptop)", "id_ed25519"),
     ("SSH passphrase (server)", "deploy key"),
+    ("SSH passphrase (backup)", "cold storage key"),
+    ("GPG key passphrase", "signing commits"),
+    ("Database password (staging)", "postgres, rotated monthly"),
+    ("Database password (prod)", "postgres, rotation on request"),
     ("Windows license", "retail key, transferable"),
+    ("Office license", "family subscription"),
+    ("Game key (spare)", "gift copy, unused"),
     ("Backup recovery code", "printed copy in the folder"),
+    ("2FA recovery codes (mail)", "one-time use, five left"),
 ];
 
-/// title, provider, cardholder, number, expiry, cvv
-const CARDS: &[(&str, &str, &str, &str, &str, &str)] = &[
-    ("Main debit", "Visa", "ALEX MORGAN", "4111111111111111", "12/29", "123"),
-    ("Travel card", "Mastercard", "ALEX MORGAN", "5555555555554444", "04/28", "456"),
-    ("Online shopping", "Visa", "ALEX MORGAN", "4012888888881881", "09/27", "789"),
-    ("Work expenses", "American Express", "ALEX MORGAN", "378282246310005", "01/30", "1234"),
-    ("Savings", "Mastercard", "A MORGAN", "5105105105105100", "06/26", "321"),
+/// title, provider, cardholder, expiry, cvv
+const CARDS: &[(&str, &str, &str, &str, &str)] = &[
+    ("Main debit", "Visa", "ALEX MORGAN", "12/29", "123"),
+    ("Salary card", "Mastercard", "ALEX MORGAN", "03/28", "456"),
+    ("Travel card", "Mastercard", "ALEX MORGAN", "04/28", "789"),
+    ("Online shopping", "Visa", "ALEX MORGAN", "09/27", "321"),
+    ("Work expenses", "American Express", "ALEX MORGAN", "01/30", "1234"),
+    ("Savings", "Mastercard", "A MORGAN", "06/26", "654"),
+    ("Family card", "Visa", "ALEX MORGAN", "11/28", "987"),
+    ("Subscriptions only", "Visa", "ALEX MORGAN", "02/27", "246"),
+    ("Crypto exchange", "Mastercard", "ALEX MORGAN", "07/29", "135"),
+    ("Deposit card", "Мир", "ALEX MORGAN", "05/30", "802"),
+    ("Second bank", "Мир", "A MORGAN", "08/27", "911"),
+    ("Backup card", "Visa", "ALEX MORGAN", "10/26", "444"),
+    ("Old card (closed)", "Maestro", "ALEX MORGAN", "01/24", "555"),
+    ("Business account", "Visa", "MORGAN LTD", "12/28", "666"),
+    ("Advertising budget", "Mastercard", "MORGAN LTD", "09/29", "777"),
+    ("Cashback card", "Visa", "ALEX MORGAN", "04/30", "888"),
+    ("Fuel card", "Mastercard", "ALEX MORGAN", "03/27", "999"),
+    ("Vacation fund", "Visa", "ALEX MORGAN", "06/29", "112"),
+    ("Kids account", "Мир", "SAM MORGAN", "07/28", "223"),
+    ("Gift card (store)", "Visa", "GIFT", "12/26", "334"),
+    ("Virtual card 1", "Visa", "ALEX MORGAN", "02/28", "445"),
+    ("Virtual card 2", "Mastercard", "ALEX MORGAN", "05/28", "556"),
+];
+
+/// Standard test card numbers — they belong to no one.
+const TEST_NUMBERS: &[&str] = &[
+    "4111111111111111",
+    "5555555555554444",
+    "4012888888881881",
+    "378282246310005",
+    "5105105105105100",
 ];
 
 /// title, body
 const NOTES: &[(&str, &str)] = &[
-    ("Passport details", "Number: X0000000
-Issued: 01.01.2020
-Expires: 01.01.2030"),
-    ("Door codes", "Building: 1234
-Garage: 5678
-Mailbox: 90"),
+    ("Passport details", "Number: X0000000\nIssued: 01.01.2020\nExpires: 01.01.2030"),
+    ("Driving licence", "Number 00-AA-000000, category B, valid until 2032"),
+    ("Door codes", "Building: 1234\nGarage: 5678\nMailbox: 90"),
+    ("Alarm code", "Disarm 4321, duress code 8765"),
     ("Insurance policy", "Policy AB-123456, hotline +1 000 000 00 00"),
-    ("Server notes", "Reverse proxy config lives in /etc/caddy
-Certs renew automatically"),
-    ("Borscht recipe", "Beetroot, cabbage, potatoes, onion, tomatoes, garlic.
-Simmer for 40 minutes, add garlic at the very end."),
-    ("Gift ideas", "Coffee grinder, mechanical keyboard, hiking socks"),
+    ("Health insurance", "Card number, clinic address, list of covered services"),
     ("Car details", "VIN, insurance dates, service every 15000 km"),
+    ("Winter tyres", "Stored at the service, receipt number 4472"),
+    ("Server notes", "Reverse proxy config lives in /etc/caddy\nCerts renew automatically"),
+    ("Home network", "Static leases for the NAS and the printer\nGuest VLAN is isolated"),
+    ("Backup plan", "Vault copy to the cloud folder, photos to the external disk monthly"),
+    (
+        "Borscht recipe",
+        "Beetroot, cabbage, potatoes, onion, tomatoes, garlic.\nSimmer for 40 minutes, add garlic at the very end.",
+    ),
+    ("Pizza dough", "500 g flour, 325 ml water, 10 g salt, 3 g yeast. Cold rise 24 h."),
+    ("Coffee ratios", "V60: 15 g coffee, 250 ml water, 94 C, 2:30 total"),
+    ("Gift ideas", "Coffee grinder, mechanical keyboard, hiking socks"),
+    ("Books to read", "Designing Data-Intensive Applications\nThe Rust Programming Language"),
+    ("Films to watch", "Arrival, Whiplash, The Handmaiden, Perfect Days"),
+    ("Trip checklist", "Documents, chargers, adapters, medicine, offline maps"),
+    ("Packing list (hiking)", "Tent, sleeping bag, gas, first aid kit, water filter"),
     ("Bank support", "Card blocking hotline and the reference number for the last claim"),
+    ("Warranty receipts", "Laptop until 2027, monitor until 2026, phone until 2025"),
+    ("Subscriptions", "Music, storage, domain renewals with their dates"),
+    ("Domain renewals", "example.com renews in March, example.org in September"),
+    ("Emergency contacts", "Neighbour, plumber, electrician, vet"),
+    ("Measurements", "Window sizes for blinds, shelf depth, doorway width"),
+    ("Wine notes", "Liked: Sicilian red, dry riesling. Avoid: heavy oaked chardonnay."),
 ];
 
 fn main() {
@@ -103,14 +170,16 @@ fn main() {
         digits: true,
         symbols: true,
     };
+    let secret = || crypto::generate_password(&opts).expect("generate").to_string();
 
     let mut data = VaultData::default();
+
     for (title, username, email, url) in SERVICES {
         data.passwords.push(PasswordEntry {
             id: Uuid::new_v4(),
             title: (*title).to_string(),
             username: (*username).to_string(),
-            password: crypto::generate_password(&opts).expect("generate").to_string(),
+            password: secret(),
             email: (*email).to_string(),
             url: (*url).to_string(),
             notes: String::new(),
@@ -121,18 +190,18 @@ fn main() {
         data.keys.push(KeyEntry {
             id: Uuid::new_v4(),
             title: (*title).to_string(),
-            key: crypto::generate_password(&opts).expect("generate").to_string(),
+            key: secret(),
             notes: (*notes).to_string(),
         });
     }
 
-    for (title, provider, cardholder, number, expiry, cvv) in CARDS {
+    for (i, (title, provider, cardholder, expiry, cvv)) in CARDS.iter().enumerate() {
         data.cards.push(CardEntry {
             id: Uuid::new_v4(),
             title: (*title).to_string(),
             provider: (*provider).to_string(),
             cardholder: (*cardholder).to_string(),
-            number: (*number).to_string(),
+            number: TEST_NUMBERS[i % TEST_NUMBERS.len()].to_string(),
             expiry: (*expiry).to_string(),
             cvv: (*cvv).to_string(),
             notes: String::new(),
