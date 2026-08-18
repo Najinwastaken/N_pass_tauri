@@ -57,9 +57,10 @@ In the `vaults` folder **next to the executable**:
 ```
 N-Pass/
 ├── n-pass.exe
+├── window-state.json     ← remembered window size/position (safe to delete)
 └── vaults/
-    ├── Misha.npass       ← your encrypted vault
-    └── Misha.npass.bak   ← automatic copy of the previous version
+    ├── Najin.npass       ← your encrypted vault
+    └── Najin.npass.bak   ← automatic copy of the previous version
 ```
 
 A `.npass` file is fully self-contained: copy it to another machine,
