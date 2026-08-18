@@ -3,7 +3,7 @@
 // exist only as the values entries carry, so this is the whole of it.
 
 import { useEffect, useRef, useState } from "react";
-import { IconChevronDown } from "./icons";
+import { IconCheck, IconChevronDown } from "./icons";
 
 interface Props {
   value: string;
@@ -15,6 +15,9 @@ interface Props {
 
 export function ComboBox({ value, options, onChange, placeholder }: Props) {
   const [open, setOpen] = useState(false);
+  // Typing narrows the list; opening it by hand means "show me everything",
+  // otherwise picking a different value after choosing one is impossible.
+  const [narrowToInput, setNarrowToInput] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -34,9 +37,14 @@ export function ComboBox({ value, options, onChange, placeholder }: Props) {
   }, [open]);
 
   const typed = value.trim().toLowerCase();
-  const suggestions = options.filter(
-    (o) => o.toLowerCase() !== typed && o.toLowerCase().includes(typed),
-  );
+  const suggestions = narrowToInput
+    ? options.filter((o) => o.toLowerCase().includes(typed))
+    : options;
+
+  function show(all: boolean) {
+    setNarrowToInput(!all);
+    setOpen(true);
+  }
 
   return (
     <div className="select" ref={rootRef}>
@@ -46,37 +54,44 @@ export function ComboBox({ value, options, onChange, placeholder }: Props) {
           placeholder={placeholder}
           onChange={(e) => {
             onChange(e.target.value);
-            setOpen(true);
+            show(false);
           }}
-          onFocus={() => setOpen(true)}
+          onFocus={() => show(true)}
         />
         {options.length > 0 && (
           <button
             type="button"
             className="icon"
             tabIndex={-1}
-            onClick={() => setOpen((v) => !v)}
+            onClick={() => (open ? setOpen(false) : show(true))}
           >
-            <IconChevronDown size={14} className={open ? "select-chevron open" : "select-chevron"} />
+            <IconChevronDown
+              size={14}
+              className={open ? "select-chevron open" : "select-chevron"}
+            />
           </button>
         )}
       </div>
       {open && suggestions.length > 0 && (
         <ul className="select-menu" role="listbox">
-          {suggestions.map((option) => (
-            <li
-              key={option}
-              role="option"
-              aria-selected={false}
-              className="select-option"
-              onClick={() => {
-                onChange(option);
-                setOpen(false);
-              }}
-            >
-              {option}
-            </li>
-          ))}
+          {suggestions.map((option) => {
+            const current = option.toLowerCase() === typed;
+            return (
+              <li
+                key={option}
+                role="option"
+                aria-selected={current}
+                className={`select-option ${current ? "selected" : ""}`}
+                onClick={() => {
+                  onChange(option);
+                  setOpen(false);
+                }}
+              >
+                {option}
+                {current && <IconCheck size={14} />}
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>
