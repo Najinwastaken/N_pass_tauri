@@ -864,14 +864,21 @@ textarea.invalid {
 
 .content {
   flex: 1;
-  overflow-y: auto;
-  padding: 30px 44px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 30px 44px 0;
   min-width: 0;
+  min-height: 0;
 }
 
 /* List views stretch with the window — the columns are flex fractions
    and redistribute automatically. Only forms stay a narrow column. */
 .view {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
   max-width: none;
 }
 
@@ -880,19 +887,32 @@ textarea.invalid {
   max-width: 680px;
 }
 
-/* Stays in reach while a long list scrolls underneath, so "Add" and the
-   search box never require scrolling back to the top. */
+/* Outside the scrolling region: "Add" and the search box stay in reach
+   without anything passing under them. */
 .view-header {
-  position: sticky;
-  top: 0;
-  z-index: 20;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 0 14px;
-  margin-bottom: 8px;
-  background: color-mix(in srgb, var(--bg-base) 88%, transparent);
-  backdrop-filter: blur(16px);
+  margin-bottom: 18px;
+}
+
+/* Whatever a view puts below its header is the part that scrolls. */
+.view > .entry-list,
+.view > .form,
+.view > .settings,
+.view > .generator {
+  overflow-y: auto;
+  min-height: 0;
+  padding-bottom: 30px;
+}
+
+.view > .entry-list {
+  flex: 1;
+}
+
+.view > .empty-state {
+  flex-shrink: 0;
 }
 
 .view-header h2 {
