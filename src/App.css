@@ -1140,6 +1140,16 @@ button.cell-copy:active:not(:disabled) {
   transform: scale(0.88);
 }
 
+/* Success flash on any icon button (e.g. password regenerated). */
+button.icon.flash-ok {
+  color: var(--success);
+  animation: copy-pop 0.3s cubic-bezier(0.2, 0.7, 0.3, 1.4);
+}
+
+button.icon.flash-ok:hover:not(:disabled) {
+  color: var(--success);
+}
+
 /* Success flash after copying. */
 button.cell-copy.copied {
   opacity: 1;

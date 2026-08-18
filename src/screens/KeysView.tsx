@@ -13,6 +13,7 @@ import {
   IconKey,
   IconPencil,
   IconPlus,
+  IconRefresh,
   IconSparkles,
   IconTrash,
 } from "../lib/icons";
@@ -142,6 +143,7 @@ function KeyForm({
 }) {
   const [form, setForm] = useState<KeyInput>(EMPTY);
   const [showKey, setShowKey] = useState(false);
+  const [regenerated, setRegenerated] = useState(false);
   const [shake, setShake] = useState(0);
   const [missing, setMissing] = useState<string[]>([]);
   const [loaded, setLoaded] = useState(initial === null);
@@ -176,7 +178,8 @@ function KeyForm({
   async function handleGenerate() {
     const key = await api.generatePassword(loadGenOptions());
     setForm((f) => ({ ...f, key }));
-    setShowKey(true);
+    setRegenerated(true);
+    setTimeout(() => setRegenerated(false), 1100);
   }
 
   if (!loaded) return null;
@@ -211,11 +214,11 @@ function KeyForm({
             />
             <button
               type="button"
-              className="icon"
+              className={`icon ${regenerated ? "flash-ok" : ""}`}
               title={t("generate")}
               onClick={() => void handleGenerate()}
             >
-              <IconSparkles size={16} />
+              {regenerated ? <IconRefresh size={16} /> : <IconSparkles size={16} />}
             </button>
             <button
               type="button"

@@ -12,6 +12,7 @@ import {
   IconGrip,
   IconPencil,
   IconPlus,
+  IconRefresh,
   IconSearch,
   IconShield,
   IconSparkles,
@@ -187,6 +188,7 @@ function EntryForm({
 }) {
   const [form, setForm] = useState<PasswordInput>(EMPTY);
   const [showPw, setShowPw] = useState(false);
+  const [regenerated, setRegenerated] = useState(false);
   const [shake, setShake] = useState(0);
   const [missing, setMissing] = useState<string[]>([]);
   const [loaded, setLoaded] = useState(initial === null);
@@ -233,11 +235,14 @@ function EntryForm({
     setForm((f) => ({ ...f, [field]: e.target.value }));
 
   /** One click: fill the field with a password generated using the
-      last-used Generator settings, and reveal it so the user sees it. */
+      last-used Generator settings. The value stays masked — secrets are
+      only ever revealed by the eye button — so the icon flashes instead
+      to confirm the field was refreshed. */
   async function handleGenerate() {
     const password = await api.generatePassword(loadGenOptions());
     setForm((f) => ({ ...f, password }));
-    setShowPw(true);
+    setRegenerated(true);
+    setTimeout(() => setRegenerated(false), 1100);
   }
 
   if (!loaded) return null;
@@ -276,11 +281,11 @@ function EntryForm({
             />
             <button
               type="button"
-              className="icon"
+              className={`icon ${regenerated ? "flash-ok" : ""}`}
               title={t("generate")}
               onClick={() => void handleGenerate()}
             >
-              <IconSparkles size={16} />
+              {regenerated ? <IconRefresh size={16} /> : <IconSparkles size={16} />}
             </button>
             <button
               type="button"
