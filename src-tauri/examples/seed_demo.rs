@@ -1,4 +1,5 @@
-//! Dev helper: creates a `Demo.npass` vault filled with sample entries so
+//! Dev helper: creates a `Demo.npass` vault filled with sample entries of
+//! every type (passwords, keys, cards, notes) so
 //! the UI can be tried at a realistic size without typing everything by
 //! hand. Not part of the shipped app (examples are excluded from builds).
 //!
@@ -7,7 +8,7 @@
 //! Then unlock the "Demo" profile with the password `demo`.
 
 use n_pass_lib::crypto::{self, KdfParams, PasswordOptions};
-use n_pass_lib::models::{PasswordEntry, VaultData};
+use n_pass_lib::models::{CardEntry, KeyEntry, NoteEntry, PasswordEntry, VaultData};
 use n_pass_lib::vault;
 use uuid::Uuid;
 
@@ -35,6 +36,49 @@ const SERVICES: &[(&str, &str, &str, &str)] = &[
     ("Amazon", "alex.morgan", "alex@example.com", "amazon.com"),
     ("PayPal", "alex.morgan", "alex@example.org", "paypal.com"),
     ("Cloudflare", "alex.morgan", "alex@example.com", "dash.cloudflare.com"),
+];
+
+/// title, notes
+const KEYS: &[(&str, &str)] = &[
+    ("OpenAI API", "billing account, rotate every 90 days"),
+    ("Stripe (test)", "sandbox key, safe to share with staging"),
+    ("Cloudflare API token", "DNS edit only"),
+    ("AWS access key", "personal sandbox account"),
+    ("Home Wi-Fi", "guest network is a separate entry"),
+    ("Guest Wi-Fi", ""),
+    ("Router admin", "http://192.168.1.1"),
+    ("NAS admin", "local only, no port forwarding"),
+    ("SSH passphrase (laptop)", "id_ed25519"),
+    ("SSH passphrase (server)", "deploy key"),
+    ("Windows license", "retail key, transferable"),
+    ("Backup recovery code", "printed copy in the folder"),
+];
+
+/// title, provider, cardholder, number, expiry, cvv
+const CARDS: &[(&str, &str, &str, &str, &str, &str)] = &[
+    ("Main debit", "Visa", "ALEX MORGAN", "4111111111111111", "12/29", "123"),
+    ("Travel card", "Mastercard", "ALEX MORGAN", "5555555555554444", "04/28", "456"),
+    ("Online shopping", "Visa", "ALEX MORGAN", "4012888888881881", "09/27", "789"),
+    ("Work expenses", "American Express", "ALEX MORGAN", "378282246310005", "01/30", "1234"),
+    ("Savings", "Mastercard", "A MORGAN", "5105105105105100", "06/26", "321"),
+];
+
+/// title, body
+const NOTES: &[(&str, &str)] = &[
+    ("Passport details", "Number: X0000000
+Issued: 01.01.2020
+Expires: 01.01.2030"),
+    ("Door codes", "Building: 1234
+Garage: 5678
+Mailbox: 90"),
+    ("Insurance policy", "Policy AB-123456, hotline +1 000 000 00 00"),
+    ("Server notes", "Reverse proxy config lives in /etc/caddy
+Certs renew automatically"),
+    ("Borscht recipe", "Beetroot, cabbage, potatoes, onion, tomatoes, garlic.
+Simmer for 40 minutes, add garlic at the very end."),
+    ("Gift ideas", "Coffee grinder, mechanical keyboard, hiking socks"),
+    ("Car details", "VIN, insurance dates, service every 15000 km"),
+    ("Bank support", "Card blocking hotline and the reference number for the last claim"),
 ];
 
 fn main() {
@@ -73,8 +117,45 @@ fn main() {
         });
     }
 
+    for (title, notes) in KEYS {
+        data.keys.push(KeyEntry {
+            id: Uuid::new_v4(),
+            title: (*title).to_string(),
+            key: crypto::generate_password(&opts).expect("generate").to_string(),
+            notes: (*notes).to_string(),
+        });
+    }
+
+    for (title, provider, cardholder, number, expiry, cvv) in CARDS {
+        data.cards.push(CardEntry {
+            id: Uuid::new_v4(),
+            title: (*title).to_string(),
+            provider: (*provider).to_string(),
+            cardholder: (*cardholder).to_string(),
+            number: (*number).to_string(),
+            expiry: (*expiry).to_string(),
+            cvv: (*cvv).to_string(),
+            notes: String::new(),
+        });
+    }
+
+    for (title, body) in NOTES {
+        data.notes.push(NoteEntry {
+            id: Uuid::new_v4(),
+            title: (*title).to_string(),
+            body: (*body).to_string(),
+        });
+    }
+
     vault::create(&path, MASTER_PASSWORD, &data, KdfParams::default()).expect("create vault");
 
-    println!("created {} with {} entries", path.display(), data.passwords.len());
+    println!(
+        "created {}: {} passwords, {} keys, {} cards, {} notes",
+        path.display(),
+        data.passwords.len(),
+        data.keys.len(),
+        data.cards.len(),
+        data.notes.len(),
+    );
     println!("profile: Demo   master password: {MASTER_PASSWORD}");
 }
