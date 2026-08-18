@@ -1238,7 +1238,21 @@ button.cell-copy svg {
   color: var(--text-faint);
 }
 
+/* A fixed slot, not shrink-to-fit. Revealing a secret would otherwise
+   widen this block, steal that width from the flexible columns and shift
+   the whole row sideways while the user is reading it. 175px fits a full
+   card number (19 chars); longer secrets ellipsize — they are meant to be
+   copied with the button, and the full value is in the edit form. */
+.entry-secret {
+  flex: 0 0 175px;
+  min-width: 0;
+}
+
 .entry-secret code {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-family: "Cascadia Mono", Consolas, monospace;
   font-size: 14px;
   color: var(--text-muted);
