@@ -37,3 +37,15 @@ export function loadGenOptions(): GeneratorOptions {
 export function saveGenOptions(opts: GeneratorOptions) {
   localStorage.setItem(KEY, JSON.stringify(opts));
 }
+
+// Whether the Generator page shows the result openly. Default: visible —
+// a freshly generated string is not bound to any account yet.
+const REVEAL_KEY = "genReveal";
+
+export function loadGenReveal(): boolean {
+  return localStorage.getItem(REVEAL_KEY) !== "0";
+}
+
+export function saveGenReveal(revealed: boolean) {
+  localStorage.setItem(REVEAL_KEY, revealed ? "1" : "0");
+}

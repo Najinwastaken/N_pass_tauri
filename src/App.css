@@ -1368,6 +1368,13 @@ button.cell-copy svg {
   height: 5px;
 }
 
+/* Hidden result: dots are decoration, not text worth selecting. */
+.generated.masked {
+  color: var(--text-muted);
+  letter-spacing: 0.12em;
+  user-select: none;
+}
+
 .slider-label {
   display: flex;
   flex-direction: column;

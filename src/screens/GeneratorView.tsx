@@ -1,8 +1,13 @@
 import { useEffect, useState } from "react";
 import { api, GeneratorOptions } from "../api";
 import { t, TKey } from "../lib/i18n";
-import { loadGenOptions, saveGenOptions } from "../lib/genPrefs";
-import { IconCheck, IconCopy, IconRefresh } from "../lib/icons";
+import {
+  loadGenOptions,
+  loadGenReveal,
+  saveGenOptions,
+  saveGenReveal,
+} from "../lib/genPrefs";
+import { IconCheck, IconCopy, IconEye, IconEyeOff, IconRefresh } from "../lib/icons";
 
 const CLASS_OPTIONS: { key: keyof GeneratorOptions; labelKey: TKey }[] = [
   { key: "lowercase", labelKey: "lowercase" },
@@ -15,6 +20,13 @@ export function GeneratorView() {
   const [opts, setOpts] = useState<GeneratorOptions>(loadGenOptions);
   const [password, setPassword] = useState("");
   const [copied, setCopied] = useState(false);
+  const [revealed, setRevealed] = useState(loadGenReveal);
+
+  function toggleReveal() {
+    const next = !revealed;
+    setRevealed(next);
+    saveGenReveal(next); // remembered for the next visit
+  }
 
   // Auto-regenerate whenever any option changes; remember the options so
   // the in-form generate button uses the same settings.
@@ -45,7 +57,16 @@ export function GeneratorView() {
       </div>
       <div className="generator">
         <div className="generated-row">
-          <code className="generated">{noClasses ? "—" : password}</code>
+          <code className={`generated ${revealed ? "" : "masked"}`}>
+            {noClasses ? "—" : revealed ? password : "•".repeat(password.length)}
+          </code>
+          <button
+            className="icon"
+            title={revealed ? t("hide") : t("show")}
+            onClick={toggleReveal}
+          >
+            {revealed ? <IconEyeOff size={16} /> : <IconEye size={16} />}
+          </button>
           <button
             className="icon"
             title={t("regenerate")}
