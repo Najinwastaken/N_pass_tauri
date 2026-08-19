@@ -907,6 +907,14 @@ textarea.invalid {
   overflow-y: auto;
   min-height: 0;
   padding-bottom: 30px;
+  /* A focused field draws its ring 3px outside itself, and a scrolling box
+     clips at its own edge — so the ring of a field flush with the left edge
+     was shaved off. The padding gives it room; the negative margin cancels
+     the padding out again, so everything stays lined up with the header. */
+  padding-left: 4px;
+  padding-right: 4px;
+  margin-left: -4px;
+  margin-right: -4px;
 }
 
 .view > .entry-list {
@@ -1294,7 +1302,15 @@ button.cell-copy svg {
   color: var(--text);
   font-weight: 400;
   font-size: 13.5px;
-  padding: 9px 12px;
+  /* Buttons here default to line-height 1 so an icon and its label share an
+     optical center. A select sits next to text fields and has to match their
+     height, and a field's height comes from `normal` — so it uses that too,
+     rather than a hand-picked number that would drift with the font. */
+  line-height: normal;
+  /* Less room on the right than on the left: the chevron is drawn inside a
+     box that already carries about 3px of empty space, so equal padding
+     reads as a tight left edge. */
+  padding: 9px 9px 9px 12px;
 }
 
 .select-trigger:hover:not(:disabled) {
