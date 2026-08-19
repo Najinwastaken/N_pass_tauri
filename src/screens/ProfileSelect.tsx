@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { api } from "../api";
 import { t } from "../lib/i18n";
-import { IconPencil, IconX } from "../lib/icons";
+import { IconPencil, IconPlus, IconTrash } from "../lib/icons";
 
 interface Props {
   profiles: string[];
@@ -48,10 +48,12 @@ export function ProfileSelect({ profiles, onOpen, onCreate, onChanged }: Props) 
       <h1 className="app-title">N-Pass</h1>
       <p className="muted">{t("chooseProfile")}</p>
       <div className="profile-grid">
-        {profiles.map((name) => (
+        {profiles.map((name, index) => (
           <div
             key={name}
             className="profile-tile"
+            // Tiles fly in one after another rather than all at once.
+            style={{ animationDelay: `${0.3 + index * 0.09}s` }}
             onClick={() => renaming !== name && onOpen(name)}
           >
             <span className="profile-avatar">{name[0]?.toUpperCase()}</span>
@@ -91,15 +93,18 @@ export function ProfileSelect({ profiles, onOpen, onCreate, onChanged }: Props) 
                 void handleDelete(name);
               }}
             >
-              <IconX size={14} />
+              <IconTrash size={13} />
             </button>
           </div>
         ))}
-        <div className="profile-tile new" onClick={onCreate}>
-          <span className="profile-avatar">+</span>
-          <span className="profile-name">{t("newProfile")}</span>
-        </div>
       </div>
+      {/* Creating a profile is a rare, secondary act — it sits out of the
+          way in the corner so the profiles themselves stay centred, and it
+          keeps its label so it still explains itself. */}
+      <button className="secondary corner-action" onClick={onCreate}>
+        <IconPlus size={15} />
+        {t("newProfile")}
+      </button>
     </div>
   );
 }

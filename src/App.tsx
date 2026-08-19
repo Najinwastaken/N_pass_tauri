@@ -48,6 +48,24 @@ export default function App() {
   const [toast, setToast] = useState<string | null>(null);
   useSmoothScroll();
 
+  // The webview's own menu offers Reload, Save as, Print and Inspect — none
+  // of which belong in a password manager, and all of which give away that
+  // this is a browser in a costume. Editable fields keep theirs, because
+  // cut/copy/paste by mouse is genuinely useful while filling a form; the
+  // read-only cells in the lists count as not editable and lose it too.
+  useEffect(() => {
+    const onContextMenu = (e: MouseEvent) => {
+      const field = (e.target as HTMLElement | null)?.closest?.("input, textarea");
+      const editable =
+        (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement) &&
+        !field.readOnly &&
+        !field.disabled;
+      if (!editable) e.preventDefault();
+    };
+    document.addEventListener("contextmenu", onContextMenu);
+    return () => document.removeEventListener("contextmenu", onContextMenu);
+  }, []);
+
   // Language switches re-render the whole tree (t() reads a module var).
   const [, setLangTick] = useState(0);
   useEffect(() => {

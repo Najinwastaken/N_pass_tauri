@@ -49,7 +49,7 @@ up-to-date system).
 
 ## First steps
 
-1. Run N-Pass → click **New profile**.
+1. Run N-Pass → click **New profile**, bottom right.
 2. Pick a name and a **master password** (the strength meter will tell
    you how good it is — aim for "Strong").
 3. You are in. Add your first password with **Add**.
