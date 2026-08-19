@@ -384,7 +384,7 @@ textarea.invalid {
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 31%;
+  width: 34.1%;
   height: 1px;
   background: linear-gradient(
     to right,
@@ -408,6 +408,16 @@ textarea.invalid {
 
 .titlebar-title svg {
   color: var(--accent);
+}
+
+/* Quieter than the name it follows: there for whoever goes looking for it,
+   invisible to everyone else. */
+.titlebar-version {
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  opacity: 0.6;
 }
 
 /* Hug the top-right corner of the window. */

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useAppVersion } from "../lib/version";
 import { api, Settings } from "../api";
 import { Theme } from "../lib/theme";
 import { applyLang, currentLang, isLang, t, LANGUAGES } from "../lib/i18n";
@@ -136,7 +137,20 @@ export function SettingsView({ theme, onThemeChange }: Props) {
         <BackupSection settings={settings} onSave={(s) => void save(s)} />
 
         <ChangePassword />
+
+        <VersionRow />
       </div>
+    </div>
+  );
+}
+
+/** Which build this is — the same number as the release it came from. */
+function VersionRow() {
+  const version = useAppVersion();
+  return (
+    <div className="settings-row" style={{ cursor: "default" }}>
+      <div>{t("version")}</div>
+      <div className="muted">N-Pass {version}</div>
     </div>
   );
 }

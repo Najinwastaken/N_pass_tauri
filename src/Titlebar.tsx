@@ -5,6 +5,7 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { t } from "./lib/i18n";
 import { IconGear, IconLock, IconMinus, IconSquare, IconX } from "./lib/icons";
+import { useAppVersion } from "./lib/version";
 
 interface Props {
   /** Present only while a vault is open — shows the Settings button. */
@@ -13,12 +14,14 @@ interface Props {
 
 export function Titlebar({ onSettings }: Props) {
   const win = getCurrentWindow();
+  const version = useAppVersion();
 
   return (
     <div className="titlebar" data-tauri-drag-region>
       <span className="titlebar-title" data-tauri-drag-region>
         <IconLock size={13} />
         N-Pass
+        {version && <span className="titlebar-version">v{version}</span>}
       </span>
       <div className="titlebar-buttons">
         {onSettings && (
