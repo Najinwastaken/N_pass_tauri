@@ -21,6 +21,7 @@ pub fn update_settings(state: State<'_, AppState>, settings: Settings) -> Result
     state.touch();
     let mut guard = state.vault.lock().expect("poisoned");
     let vault = guard.as_mut().ok_or_else(|| "locked".to_string())?;
+    vault.data.settings_updated_at = crate::models::now_ts();
     vault.data.settings = Settings {
         // 0 means "never" for both; clamp to sane upper bounds.
         auto_lock_minutes: settings.auto_lock_minutes.min(24 * 60),
@@ -28,8 +29,10 @@ pub fn update_settings(state: State<'_, AppState>, settings: Settings) -> Result
         ..settings
     };
     let backup_error = vault.save().map_err(err_code)?;
+    let merged = vault.pending_merge.take();
     drop(guard);
     state.report_backup_result(backup_error);
+    state.report_merge(merged);
     Ok(())
 }
 

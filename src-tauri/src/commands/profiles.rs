@@ -68,7 +68,7 @@ pub async fn create_profile(
 
     let data = VaultData::default();
     let kdf_params = KdfParams::default();
-    let key = vault::create(&path, &password, &data, kdf_params).map_err(err_code)?;
+    let (key, disk_nonce) = vault::create(&path, &password, &data, kdf_params).map_err(err_code)?;
 
     // Creating a profile unlocks it right away — no point asking for the
     // password again on the next screen.
@@ -81,6 +81,8 @@ pub async fn create_profile(
         salt,
         kdf_params,
         data,
+        disk_nonce,
+        pending_merge: None,
     });
     Ok(())
 }

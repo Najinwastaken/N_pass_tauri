@@ -1,5 +1,6 @@
 pub mod commands;
 pub mod crypto;
+pub mod merge;
 pub mod models;
 pub mod state;
 pub mod vault;
@@ -30,6 +31,19 @@ fn force_lock(app: &tauri::AppHandle) {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        // Registered first, as the plugin requires. A second launch must not
+        // get its own window: both copies would hold the same vault in memory
+        // and each save writes the whole file, so whichever saved last would
+        // silently wipe the other's work. Raise the open window instead.
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            if let Some(window) = app.get_webview_window("main") {
+                if window.is_minimized().unwrap_or(false) {
+                    let _ = window.unminimize();
+                }
+                let _ = window.show();
+                let _ = window.set_focus();
+            }
+        }))
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_dialog::init())

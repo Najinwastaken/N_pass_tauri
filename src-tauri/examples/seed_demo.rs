@@ -8,7 +8,7 @@
 //! Then unlock the "Demo" profile with the password `demo`.
 
 use n_pass_lib::crypto::{self, KdfParams, PasswordOptions};
-use n_pass_lib::models::{CardEntry, KeyEntry, NoteEntry, PasswordEntry, VaultData};
+use n_pass_lib::models::{now_ts, CardEntry, KeyEntry, NoteEntry, PasswordEntry, VaultData};
 use n_pass_lib::vault;
 use uuid::Uuid;
 
@@ -18,36 +18,162 @@ const MASTER_PASSWORD: &str = "demo";
 const SERVICES: &[(&str, &str, &str, &str, &str)] = &[
     ("GitHub", "Najin", "najin@example.com", "github.com", "Dev"),
     ("GitLab", "Najin", "najin@example.com", "gitlab.com", "Dev"),
-    ("Gmail", "Najin", "najin@example.com", "mail.google.com", "Mail"),
-    ("Outlook", "Najin", "najin@example.org", "outlook.com", "Mail"),
-    ("Proton Mail", "Najin", "najin@example.org", "account.proton.me", "Mail"),
-    ("Steam", "Najin", "najin@example.com", "store.steampowered.com", "Games"),
-    ("Epic Games", "Najin", "najin@example.com", "store.epicgames.com", "Games"),
+    (
+        "Gmail",
+        "Najin",
+        "najin@example.com",
+        "mail.google.com",
+        "Mail",
+    ),
+    (
+        "Outlook",
+        "Najin",
+        "najin@example.org",
+        "outlook.com",
+        "Mail",
+    ),
+    (
+        "Proton Mail",
+        "Najin",
+        "najin@example.org",
+        "account.proton.me",
+        "Mail",
+    ),
+    (
+        "Steam",
+        "Najin",
+        "najin@example.com",
+        "store.steampowered.com",
+        "Games",
+    ),
+    (
+        "Epic Games",
+        "Najin",
+        "najin@example.com",
+        "store.epicgames.com",
+        "Games",
+    ),
     ("GOG", "Najin", "najin@example.com", "gog.com", "Games"),
-    ("Battle.net", "Najin", "najin@example.org", "eu.shop.battle.net", "Games"),
-    ("Ubisoft Connect", "Najin", "najin@example.com", "ubisoft.com", "Games"),
-    ("PlayStation Network", "Najin", "najin@example.com", "playstation.com", "Games"),
-    ("Discord", "Najin", "najin@example.com", "www.discord.com/channels/@me", "Social"),
+    (
+        "Battle.net",
+        "Najin",
+        "najin@example.org",
+        "eu.shop.battle.net",
+        "Games",
+    ),
+    (
+        "Ubisoft Connect",
+        "Najin",
+        "najin@example.com",
+        "ubisoft.com",
+        "Games",
+    ),
+    (
+        "PlayStation Network",
+        "Najin",
+        "najin@example.com",
+        "playstation.com",
+        "Games",
+    ),
+    (
+        "Discord",
+        "Najin",
+        "najin@example.com",
+        "www.discord.com/channels/@me",
+        "Social",
+    ),
     ("Telegram", "Najin", "", "web.telegram.org", "Social"),
     ("Slack", "Najin", "najin@example.com", "slack.com", "Work"),
     ("Zoom", "Najin", "najin@example.com", "zoom.us", "Work"),
-    ("Netflix", "Najin", "family@example.org", "netflix.com", "Media"),
-    ("Spotify", "Najin", "najin@example.com", "open.spotify.com", "Media"),
-    ("YouTube", "Najin", "najin@example.com", "youtube.com", "Media"),
+    (
+        "Netflix",
+        "Najin",
+        "family@example.org",
+        "netflix.com",
+        "Media",
+    ),
+    (
+        "Spotify",
+        "Najin",
+        "najin@example.com",
+        "open.spotify.com",
+        "Media",
+    ),
+    (
+        "YouTube",
+        "Najin",
+        "najin@example.com",
+        "youtube.com",
+        "Media",
+    ),
     ("Twitch", "Najin", "najin@example.com", "twitch.tv", "Media"),
-    ("Reddit", "Najin", "najin@example.com", "reddit.com", "Social"),
+    (
+        "Reddit",
+        "Najin",
+        "najin@example.com",
+        "reddit.com",
+        "Social",
+    ),
     ("X", "Najin", "najin@example.com", "x.com", "Social"),
-    ("LinkedIn", "Najin", "najin@example.org", "linkedin.com/in/najin", "Work"),
-    ("Amazon", "Najin", "najin@example.com", "amazon.com", "Shopping"),
+    (
+        "LinkedIn",
+        "Najin",
+        "najin@example.org",
+        "linkedin.com/in/najin",
+        "Work",
+    ),
+    (
+        "Amazon",
+        "Najin",
+        "najin@example.com",
+        "amazon.com",
+        "Shopping",
+    ),
     ("eBay", "Najin", "najin@example.com", "ebay.com", "Shopping"),
-    ("PayPal", "Najin", "najin@example.org", "paypal.com", "Shopping"),
-    ("Booking", "Najin", "najin@example.com", "booking.com", "Travel"),
-    ("Airbnb", "Najin", "najin@example.com", "airbnb.com", "Travel"),
-    ("Dropbox", "Najin", "najin@example.com", "dropbox.com", "Work"),
+    (
+        "PayPal",
+        "Najin",
+        "najin@example.org",
+        "paypal.com",
+        "Shopping",
+    ),
+    (
+        "Booking",
+        "Najin",
+        "najin@example.com",
+        "booking.com",
+        "Travel",
+    ),
+    (
+        "Airbnb",
+        "Najin",
+        "najin@example.com",
+        "airbnb.com",
+        "Travel",
+    ),
+    (
+        "Dropbox",
+        "Najin",
+        "najin@example.com",
+        "dropbox.com",
+        "Work",
+    ),
     ("Notion", "Najin", "najin@example.com", "notion.so", "Work"),
     ("Figma", "Najin", "najin@example.org", "figma.com", "Dev"),
-    ("Cloudflare", "Najin", "najin@example.com", "dash.cloudflare.com", "Dev"),
-    ("DigitalOcean", "Najin", "najin@example.org", "cloud.digitalocean.com", "Dev"),
+    (
+        "Cloudflare",
+        "Najin",
+        "najin@example.com",
+        "dash.cloudflare.com",
+        "Dev",
+    ),
+    (
+        "DigitalOcean",
+        "Najin",
+        "najin@example.org",
+        "cloud.digitalocean.com",
+        "Dev",
+    ),
 ];
 
 /// title, notes
@@ -86,24 +212,54 @@ const CARDS: &[(&str, &str, &str, &str, &str)] = &[
     ("Salary card", "Mastercard", "NAJIN MORGAN", "03/28", "456"),
     ("Travel card", "Mastercard", "NAJIN MORGAN", "04/28", "789"),
     ("Online shopping", "Visa", "NAJIN MORGAN", "09/27", "321"),
-    ("Work expenses", "American Express", "NAJIN MORGAN", "01/30", "1234"),
+    (
+        "Work expenses",
+        "American Express",
+        "NAJIN MORGAN",
+        "01/30",
+        "1234",
+    ),
     ("Savings", "Mastercard", "A MORGAN", "06/26", "654"),
     ("Family card", "Visa", "NAJIN MORGAN", "11/28", "987"),
     ("Subscriptions only", "Visa", "NAJIN MORGAN", "02/27", "246"),
-    ("Crypto exchange", "Mastercard", "NAJIN MORGAN", "07/29", "135"),
+    (
+        "Crypto exchange",
+        "Mastercard",
+        "NAJIN MORGAN",
+        "07/29",
+        "135",
+    ),
     ("Deposit card", "Мир", "NAJIN MORGAN", "05/30", "802"),
     ("Second bank", "Мир", "A MORGAN", "08/27", "911"),
     ("Backup card", "Visa", "NAJIN MORGAN", "10/26", "444"),
-    ("Old card (closed)", "Maestro", "NAJIN MORGAN", "01/24", "555"),
+    (
+        "Old card (closed)",
+        "Maestro",
+        "NAJIN MORGAN",
+        "01/24",
+        "555",
+    ),
     ("Business account", "Visa", "MORGAN LTD", "12/28", "666"),
-    ("Advertising budget", "Mastercard", "MORGAN LTD", "09/29", "777"),
+    (
+        "Advertising budget",
+        "Mastercard",
+        "MORGAN LTD",
+        "09/29",
+        "777",
+    ),
     ("Cashback card", "Visa", "NAJIN MORGAN", "04/30", "888"),
     ("Fuel card", "Mastercard", "NAJIN MORGAN", "03/27", "999"),
     ("Vacation fund", "Visa", "NAJIN MORGAN", "06/29", "112"),
     ("Kids account", "Мир", "SAM MORGAN", "07/28", "223"),
     ("Gift card (store)", "Visa", "GIFT", "12/26", "334"),
     ("Virtual card 1", "Visa", "NAJIN MORGAN", "02/28", "445"),
-    ("Virtual card 2", "Mastercard", "NAJIN MORGAN", "05/28", "556"),
+    (
+        "Virtual card 2",
+        "Mastercard",
+        "NAJIN MORGAN",
+        "05/28",
+        "556",
+    ),
 ];
 
 /// Standard test card numbers — they belong to no one.
@@ -170,7 +326,11 @@ fn main() {
         digits: true,
         symbols: true,
     };
-    let secret = || crypto::generate_password(&opts).expect("generate").to_string();
+    let secret = || {
+        crypto::generate_password(&opts)
+            .expect("generate")
+            .to_string()
+    };
 
     let mut data = VaultData::default();
 
@@ -184,6 +344,7 @@ fn main() {
             category: (*category).to_string(),
             url: (*url).to_string(),
             notes: String::new(),
+            updated_at: now_ts(),
         });
     }
 
@@ -193,6 +354,7 @@ fn main() {
             title: (*title).to_string(),
             key: secret(),
             notes: (*notes).to_string(),
+            updated_at: now_ts(),
         });
     }
 
@@ -206,6 +368,7 @@ fn main() {
             expiry: (*expiry).to_string(),
             cvv: (*cvv).to_string(),
             notes: String::new(),
+            updated_at: now_ts(),
         });
     }
 
@@ -214,6 +377,7 @@ fn main() {
             id: Uuid::new_v4(),
             title: (*title).to_string(),
             body: (*body).to_string(),
+            updated_at: now_ts(),
         });
     }
 

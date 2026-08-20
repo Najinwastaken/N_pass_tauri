@@ -120,7 +120,12 @@ pub fn copy_secret(
                 .iter()
                 .find(|e| e.id == id)
                 .map(|e| e.cvv.clone()),
-            "key" => vault.data.keys.iter().find(|e| e.id == id).map(|e| e.key.clone()),
+            "key" => vault
+                .data
+                .keys
+                .iter()
+                .find(|e| e.id == id)
+                .map(|e| e.key.clone()),
             _ => return Err("unknown_kind".into()),
         }
         .ok_or_else(|| "not_found".to_string())?
@@ -137,10 +142,7 @@ pub fn copy_secret(
 /// `javascript:`, `file://`, custom protocol handlers or local paths.
 fn normalize_url(raw: &str) -> Result<String, String> {
     let trimmed = raw.trim();
-    if trimmed.is_empty()
-        || trimmed.contains(char::is_whitespace)
-        || trimmed.contains('\\')
-    {
+    if trimmed.is_empty() || trimmed.contains(char::is_whitespace) || trimmed.contains('\\') {
         return Err("invalid_url".into());
     }
 
@@ -197,7 +199,10 @@ mod tests {
             ("http://discord.com", "http://discord.com"),
             ("www.discord.com", "https://www.discord.com"),
             ("discord.com", "https://discord.com"),
-            ("  discord.com/invite/abc  ", "https://discord.com/invite/abc"),
+            (
+                "  discord.com/invite/abc  ",
+                "https://discord.com/invite/abc",
+            ),
             ("HTTPS://Discord.com", "https://Discord.com"),
             ("localhost:1420", "https://localhost:1420"),
             // copy-paste slips with a doubled scheme

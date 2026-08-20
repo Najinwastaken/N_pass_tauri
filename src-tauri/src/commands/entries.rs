@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use tauri::State;
 use uuid::Uuid;
 
-use crate::models::{CardEntry, KeyEntry, NoteEntry, PasswordEntry};
+use crate::models::{now_ts, CardEntry, KeyEntry, NoteEntry, PasswordEntry, Tombstone};
 use crate::state::{AppState, UnlockedVault};
 
 use super::err_code;
@@ -35,12 +35,13 @@ fn mutate<T>(
     state: &State<'_, AppState>,
     f: impl FnOnce(&mut UnlockedVault) -> Result<T, String>,
 ) -> Result<T, String> {
-    let (result, backup_error) = with_vault(state, |vault| {
+    let (result, backup_error, merged) = with_vault(state, |vault| {
         let result = f(vault)?;
         let backup_error = vault.save().map_err(err_code)?;
-        Ok((result, backup_error))
+        Ok((result, backup_error, vault.pending_merge.take()))
     })?;
     state.report_backup_result(backup_error);
+    state.report_merge(merged);
     Ok(result)
 }
 
@@ -98,7 +99,12 @@ pub struct PasswordInput {
 #[tauri::command]
 pub fn list_passwords(state: State<'_, AppState>) -> Result<Vec<PasswordMeta>, String> {
     with_vault(&state, |vault| {
-        Ok(vault.data.passwords.iter().map(PasswordMeta::from).collect())
+        Ok(vault
+            .data
+            .passwords
+            .iter()
+            .map(PasswordMeta::from)
+            .collect())
     })
 }
 
@@ -120,6 +126,7 @@ pub fn add_password(
             category: input.category.trim().to_string(),
             url: input.url,
             notes: input.notes,
+            updated_at: now_ts(),
         };
         let meta = PasswordMeta::from(&entry);
         vault.data.passwords.push(entry);
@@ -150,6 +157,7 @@ pub fn update_password(
         entry.category = input.category.trim().to_string();
         entry.url = input.url;
         entry.notes = input.notes;
+        entry.updated_at = now_ts();
         Ok(())
     })
 }
@@ -162,6 +170,9 @@ pub fn delete_password(state: State<'_, AppState>, id: Uuid) -> Result<(), Strin
         if vault.data.passwords.len() == before {
             return Err("not_found".to_string());
         }
+        // Recorded, not merely forgotten: a merge with a copy that
+        // still holds this entry must not hand it back.
+        vault.data.deleted.push(Tombstone { id, at: now_ts() });
         Ok(())
     })
 }
@@ -256,6 +267,7 @@ pub fn add_card(state: State<'_, AppState>, input: CardInput) -> Result<CardMeta
             expiry: input.expiry,
             cvv: input.cvv,
             notes: input.notes,
+            updated_at: now_ts(),
         };
         let meta = CardMeta::from(&entry);
         vault.data.cards.push(entry);
@@ -280,6 +292,7 @@ pub fn update_card(state: State<'_, AppState>, id: Uuid, input: CardInput) -> Re
         entry.expiry = input.expiry;
         entry.cvv = input.cvv;
         entry.notes = input.notes;
+        entry.updated_at = now_ts();
         Ok(())
     })
 }
@@ -292,6 +305,9 @@ pub fn delete_card(state: State<'_, AppState>, id: Uuid) -> Result<(), String> {
         if vault.data.cards.len() == before {
             return Err("not_found".to_string());
         }
+        // Recorded, not merely forgotten: a merge with a copy that
+        // still holds this entry must not hand it back.
+        vault.data.deleted.push(Tombstone { id, at: now_ts() });
         Ok(())
     })
 }
@@ -358,6 +374,7 @@ pub fn add_note(state: State<'_, AppState>, input: NoteInput) -> Result<NoteMeta
             id: Uuid::new_v4(),
             title: input.title.trim().to_string(),
             body: input.body,
+            updated_at: now_ts(),
         };
         let meta = NoteMeta {
             id: entry.id,
@@ -382,6 +399,7 @@ pub fn update_note(state: State<'_, AppState>, id: Uuid, input: NoteInput) -> Re
             .ok_or_else(|| "not_found".to_string())?;
         entry.title = input.title.trim().to_string();
         entry.body = input.body;
+        entry.updated_at = now_ts();
         Ok(())
     })
 }
@@ -394,6 +412,9 @@ pub fn delete_note(state: State<'_, AppState>, id: Uuid) -> Result<(), String> {
         if vault.data.notes.len() == before {
             return Err("not_found".to_string());
         }
+        // Recorded, not merely forgotten: a merge with a copy that
+        // still holds this entry must not hand it back.
+        vault.data.deleted.push(Tombstone { id, at: now_ts() });
         Ok(())
     })
 }
@@ -423,8 +444,7 @@ pub fn search_notes(state: State<'_, AppState>, query: String) -> Result<Vec<Not
             .iter()
             .filter(|e| {
                 words.is_empty() || {
-                    let haystack =
-                        format!("{}\n{}", e.title.to_lowercase(), e.body.to_lowercase());
+                    let haystack = format!("{}\n{}", e.title.to_lowercase(), e.body.to_lowercase());
                     matches_all_words(&haystack, &words)
                 }
             })
@@ -493,6 +513,7 @@ pub fn add_key(state: State<'_, AppState>, input: KeyInput) -> Result<KeyMeta, S
             title: input.title.trim().to_string(),
             key: input.key,
             notes: input.notes,
+            updated_at: now_ts(),
         };
         let meta = KeyMeta {
             id: entry.id,
@@ -519,6 +540,7 @@ pub fn update_key(state: State<'_, AppState>, id: Uuid, input: KeyInput) -> Resu
         entry.title = input.title.trim().to_string();
         entry.key = input.key;
         entry.notes = input.notes;
+        entry.updated_at = now_ts();
         Ok(())
     })
 }
@@ -531,6 +553,9 @@ pub fn delete_key(state: State<'_, AppState>, id: Uuid) -> Result<(), String> {
         if vault.data.keys.len() == before {
             return Err("not_found".to_string());
         }
+        // Recorded, not merely forgotten: a merge with a copy that
+        // still holds this entry must not hand it back.
+        vault.data.deleted.push(Tombstone { id, at: now_ts() });
         Ok(())
     })
 }
@@ -616,7 +641,10 @@ mod tests {
     fn matches_all_words_any_order_and_cyrillic() {
         let hay = "рецепт борща\nлук, томаты и Свёкла".to_lowercase();
         let words = |s: &str| -> Vec<String> {
-            s.to_lowercase().split_whitespace().map(String::from).collect()
+            s.to_lowercase()
+                .split_whitespace()
+                .map(String::from)
+                .collect()
         };
         assert!(matches_all_words(&hay, &words("лук рецепт")));
         assert!(matches_all_words(&hay, &words("СВЁКЛА")));
@@ -646,13 +674,16 @@ pub fn rename_category(
     }
     mutate(&state, |vault| {
         let mut changed = 0;
+        let now = now_ts();
         for entry in vault.data.passwords.iter_mut() {
             if entry.category.trim() == from {
                 entry.category = to.clone();
+                entry.updated_at = now;
                 changed += 1;
             }
         }
         rename_in_order(&mut vault.data.settings.category_order, &from, &to);
+        vault.data.settings_updated_at = now;
         Ok(changed)
     })
 }

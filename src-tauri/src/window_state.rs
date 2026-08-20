@@ -28,7 +28,12 @@ struct WindowState {
 }
 
 fn state_path() -> Option<PathBuf> {
-    Some(std::env::current_exe().ok()?.parent()?.join("window-state.json"))
+    Some(
+        std::env::current_exe()
+            .ok()?
+            .parent()?
+            .join("window-state.json"),
+    )
 }
 
 fn load() -> Option<WindowState> {

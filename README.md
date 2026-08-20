@@ -208,8 +208,9 @@ N-Pass/
 ├── n-pass.exe
 ├── window-state.json     ← remembered window size/position (safe to delete)
 └── vaults/
-    ├── Najin.npass       ← your encrypted vault
-    └── Najin.npass.bak   ← automatic copy of the previous version
+    ├── Najin.npass                              ← your encrypted vault
+    ├── Najin.npass.2026-08-20_071530.bak        ← the version before this one
+    └── Najin.npass.2026-08-19_183012.bak        ← and the one before that
 ```
 
 A `.npass` file is fully self-contained: copy it to another machine,
@@ -221,19 +222,29 @@ also means **backing up = copying one file**.
 There are three layers of safety, and it is worth knowing what each one
 does — they are not interchangeable.
 
-**1. The `.bak` file — protection against a broken write.** Every time
-something is saved, N-Pass writes the new version to a temporary file
-first, turns the current vault into `.bak`, and only then puts the new
-file in place. So even if the power goes out mid-save, a complete,
-readable vault always exists on disk. To go back to it: close N-Pass,
-rename `Najin.npass` to something else, rename `Najin.npass.bak` to
-`Najin.npass`, start the app.
+**1. The `.bak` files — the last two versions, kept automatically.**
+Every time something is saved, N-Pass writes the new version to a
+temporary file first, sets the current vault aside under a stamped name
+like `Najin.npass.2026-08-20_071530.bak`, and only then puts the new file
+in place. So even if the power goes out mid-save, a complete, readable
+vault always exists on disk.
 
-⚠️ **The `.bak` file is not an undo.** It holds the state from exactly
-one save ago, and *every* change saves — adding an entry, editing,
-reordering, even flipping a setting. If you delete an entry by accident
-and then do anything else, that deletion is already in the `.bak` too.
-For that, use layer 2 or 3.
+The two most recent versions are kept and older ones are removed, so the
+folder does not fill up. To go back to one: close N-Pass, rename
+`Najin.npass` to something else, rename the `.bak` you want to
+`Najin.npass`, and start the app. The stamp in the name is local time, so
+picking the right one is a matter of reading the folder.
+
+This also covers a case the app cannot see at all: copying an older vault
+over a newer one in Explorer, with N-Pass closed. Nothing inside the
+program can notice that — but the version it replaced is still sitting
+next to it.
+
+⚠️ **These are not an undo.** They hold the state from one and two saves
+ago, and *every* change saves — adding an entry, editing, reordering,
+even flipping a setting. Delete an entry by accident and then do a couple
+of other things, and the deletion is in both copies. For that, use layer
+2 or 3.
 
 **2. Backup folder (Settings → Backup folder) — protection against
 losing the computer.** Choose a folder synced by Google Drive, Dropbox or
@@ -250,6 +261,36 @@ with the master password that was in use when the copy was made.
 copies (including `.bak`) still open with the **old** one — they were
 encrypted with it. A file that looks "broken" is often just waiting for
 the previous password.
+
+## Using one vault from more than one place
+
+**N-Pass only runs once at a time.** Launch it again and the window you
+already have comes to the front instead of a second one opening. Two
+windows over the same vault would each hold the whole thing in memory, and
+whichever saved last would quietly wipe the other's work.
+
+That leaves the case no program can prevent from the outside: the same
+file reached from two computers through a synced folder, or a backup
+copied back in while N-Pass is open. **Here it merges instead of
+overwriting.**
+
+Every entry records when it last changed, and every deletion leaves a mark
+behind. So when a save finds the file changed underneath it, the two
+versions are folded together rather than one replacing the other:
+
+- an entry only the other side has is taken in;
+- an entry edited on both sides keeps the newer of the two;
+- a deletion sticks — unless the entry was edited *after* it was deleted,
+  in which case someone wanted it more recently than someone threw it away.
+
+You are told it happened — "changes from another copy were merged in" —
+and nothing is asked of you.
+
+Two things this cannot do. If you overwrite the vault in Explorer while
+N-Pass is closed, there is nothing to merge: the program never saw it, and
+the previous versions kept next to the vault are the way back. And the
+order you dragged entries into is not merged — the copy doing the saving
+keeps its own order.
 
 ## Everyday features
 
@@ -369,7 +410,11 @@ For readers who want the details:
   crosses into the UI exclusively on explicit action (reveal one field
   of one entry). "Copy password" moves vault → clipboard entirely
   inside Rust.
-- **Writes are atomic** (temp file + rename) with a `.bak` of the
+- **One instance at a time**, so two windows can never hold the same
+  vault; a file changed by another writer is merged in on save, per-entry
+  by modification time, with tombstones for deletions.
+- **Writes are atomic** (temp file + rename) keeping the last two
+  versions of the
   previous version kept next to the vault.
 - **Randomness**: OS CSPRNG (`OsRng`) only — salts, nonces, generated
   passwords.

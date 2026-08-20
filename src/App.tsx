@@ -74,6 +74,20 @@ export default function App() {
     return () => window.removeEventListener("np-lang", bump);
   }, []);
 
+  // A save that found the file changed by someone else folds that version
+  // in rather than overwriting it. Entries can appear or vanish as a result,
+  // so the open screen is rebuilt from the vault and the user is told why.
+  const [mergeTick, setMergeTick] = useState(0);
+  useEffect(() => {
+    const unlisten = listen<number>("vault-merged", (e) => {
+      setToast(t("vaultMergedToast", { n: String(e.payload) }));
+      setMergeTick((n) => n + 1);
+    });
+    return () => {
+      void unlisten.then((f) => f());
+    };
+  }, []);
+
   // Background backup failures arrive from Rust as an event → styled toast.
   useEffect(() => {
     const unlisten = listen<string>("backup-failed", (e) => {
@@ -147,7 +161,10 @@ export default function App() {
       );
       break;
     case "main":
-      content = <Main profile={screen.profile} onLocked={() => void goToStart()} />;
+      // The key remounts Main after a merge, so every list reloads.
+      content = (
+        <Main key={mergeTick} profile={screen.profile} onLocked={() => void goToStart()} />
+      );
       break;
   }
 

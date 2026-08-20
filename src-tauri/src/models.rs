@@ -28,6 +28,13 @@ pub struct PasswordEntry {
     pub category: String,
     pub url: String,
     pub notes: String,
+    /// When this entry last changed, in unix seconds UTC. Two copies of the
+    /// same vault are merged by comparing these, so the clock has to mean
+    /// the same thing on every machine — hence UTC, not local time.
+    /// A missing value reads as 0, which is older than anything: entries
+    /// written before this field existed lose to any later edit.
+    #[serde(default)]
+    pub updated_at: i64,
 }
 
 /// A bank card record.
@@ -47,6 +54,13 @@ pub struct CardEntry {
     pub expiry: String,
     pub cvv: String,
     pub notes: String,
+    /// When this entry last changed, in unix seconds UTC. Two copies of the
+    /// same vault are merged by comparing these, so the clock has to mean
+    /// the same thing on every machine — hence UTC, not local time.
+    /// A missing value reads as 0, which is older than anything: entries
+    /// written before this field existed lose to any later edit.
+    #[serde(default)]
+    pub updated_at: i64,
 }
 
 /// A free-form secure note.
@@ -56,6 +70,13 @@ pub struct NoteEntry {
     pub id: Uuid,
     pub title: String,
     pub body: String,
+    /// When this entry last changed, in unix seconds UTC. Two copies of the
+    /// same vault are merged by comparing these, so the clock has to mean
+    /// the same thing on every machine — hence UTC, not local time.
+    /// A missing value reads as 0, which is older than anything: entries
+    /// written before this field existed lose to any later edit.
+    #[serde(default)]
+    pub updated_at: i64,
 }
 
 /// A key/token record (API keys, SSH passphrases, license keys...).
@@ -66,6 +87,30 @@ pub struct KeyEntry {
     pub title: String,
     pub key: String,
     pub notes: String,
+    /// When this entry last changed, in unix seconds UTC. Two copies of the
+    /// same vault are merged by comparing these, so the clock has to mean
+    /// the same thing on every machine — hence UTC, not local time.
+    /// A missing value reads as 0, which is older than anything: entries
+    /// written before this field existed lose to any later edit.
+    #[serde(default)]
+    pub updated_at: i64,
+}
+
+/// A record that an entry once existed and was deleted.
+///
+/// Without these, merging two copies could not tell "deleted here" from
+/// "added there": the side that still has the entry would keep handing it
+/// back, and a deletion would never stick.
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
+pub struct Tombstone {
+    pub id: Uuid,
+    /// Unix seconds UTC, as with `updated_at`.
+    pub at: i64,
+}
+
+/// Now, in unix seconds UTC.
+pub fn now_ts() -> i64 {
+    chrono::Utc::now().timestamp()
 }
 
 /// Per-vault user settings, stored encrypted along with the entries.
@@ -151,4 +196,13 @@ pub struct VaultData {
     pub keys: Vec<KeyEntry>,
     #[serde(default)]
     pub settings: Settings,
+    /// Deletions, kept so they survive a merge. Not secret — only ids and
+    /// times — so there is nothing here to wipe on lock.
+    #[serde(default)]
+    #[zeroize(skip)]
+    pub deleted: Vec<Tombstone>,
+    /// When `settings` last changed, unix seconds UTC. Settings have no
+    /// per-field history, so a merge takes whichever side is newer.
+    #[serde(default)]
+    pub settings_updated_at: i64,
 }

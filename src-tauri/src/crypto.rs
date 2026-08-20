@@ -184,7 +184,9 @@ pub fn generate_password(opts: &PasswordOptions) -> Result<Zeroizing<String>, Va
     bytes.shuffle(&mut rng);
 
     // All source alphabets are ASCII, so this cannot fail.
-    Ok(Zeroizing::new(String::from_utf8(bytes).expect("ASCII only")))
+    Ok(Zeroizing::new(
+        String::from_utf8(bytes).expect("ASCII only"),
+    ))
 }
 
 #[cfg(test)]

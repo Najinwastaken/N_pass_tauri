@@ -30,6 +30,8 @@ pub async fn unlock(
         salt: header.salt,
         kdf_params: header.kdf_params,
         data,
+        disk_nonce: header.nonce,
+        pending_merge: None,
     });
     Ok(())
 }
@@ -80,12 +82,16 @@ pub async fn change_master_password(
 
     let mut guard = state.vault.lock().expect("poisoned");
     let vault = guard.as_mut().ok_or_else(|| "locked".to_string())?;
+    // Fold in anything another writer left behind while the OLD key is still
+    // the one that can read it. After the swap it could not be read at all.
+    let merged = vault.absorb_disk_changes().map_err(err_code)?;
     vault.salt = new_salt;
     vault.kdf_params = new_params;
     vault.key = new_key;
     let backup_error = vault.save().map_err(err_code)?;
     drop(guard);
     state.report_backup_result(backup_error);
+    state.report_merge(merged);
     state.touch();
     Ok(())
 }
