@@ -3,6 +3,7 @@ import { api, KeyInput, KeyMeta } from "../api";
 import { smartCopy, useClearCellSelection } from "../lib/smartCopy";
 import { useDragReorder } from "../lib/useDragReorder";
 import { Cell } from "../lib/Cell";
+import { CopyButton } from "../lib/CopyButton";
 import { SearchBox, useSearch } from "../lib/useSearch";
 import { t } from "../lib/i18n";
 import { useListScroll } from "../lib/useListScroll";
@@ -12,7 +13,6 @@ import { clearDraft, getDraft, setDraft } from "../lib/drafts";
 const DRAFT_KEY = "keys";
 type Draft = { initial: KeyMeta | null; form: KeyInput };
 import {
-  IconCopy,
   IconEye,
   IconEyeOff,
   IconGrip,
@@ -121,19 +121,13 @@ export function KeysView() {
                 <code>{revealed[e.id] ?? "••••••••"}</code>
               </div>
               <div className="entry-actions">
+                <CopyButton title={t("copyKey")} onCopy={() => api.copySecret("key", e.id)} />
                 <button
                   className="icon"
                   title={revealed[e.id] !== undefined ? t("hide") : t("show")}
                   onClick={() => void toggleReveal(e.id)}
                 >
                   {revealed[e.id] !== undefined ? <IconEyeOff size={15} /> : <IconEye size={15} />}
-                </button>
-                <button
-                  className="icon"
-                  title={t("copyKey")}
-                  onClick={() => void api.copySecret("key", e.id)}
-                >
-                  <IconCopy size={15} />
                 </button>
                 <button className="icon" title={t("edit")} onClick={() => { rememberScroll(); setEditing(e); }}>
                   <IconPencil size={15} />

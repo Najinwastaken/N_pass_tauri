@@ -114,6 +114,8 @@ const DICT = {
   copyNumber: ["Copy number (no dashes)", "Копировать номер (без дефисов)", "Копіювати номер (без дефісів)"],
   copyCvv: ["Copy CVV", "Копировать CVV", "Копіювати CVV"],
   copyKey: ["Copy key", "Копировать ключ", "Копіювати ключ"],
+  showCvv: ["Show CVV", "Показать CVV", "Показати CVV"],
+  hideCvv: ["Hide CVV", "Скрыть CVV", "Приховати CVV"],
   showNumber: ["Show number", "Показать номер", "Показати номер"],
   hideNumber: ["Hide number", "Скрыть номер", "Приховати номер"],
   emptyPasswords: [

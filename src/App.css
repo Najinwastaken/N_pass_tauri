@@ -1325,6 +1325,14 @@ button.icon.flash-ok:hover:not(:disabled) {
   color: var(--success);
 }
 
+/* Success flash after copying, for buttons that stand on their own rather
+   than inside a cell. Deliberately not `cell-copy`: that class also hides
+   the button until its cell is hovered, which outside a cell means forever. */
+button.icon.copy-flash.copied {
+  color: var(--success);
+  animation: copy-pop 0.3s cubic-bezier(0.2, 0.7, 0.3, 1.4);
+}
+
 /* Success flash after copying. */
 button.cell-copy.copied {
   opacity: 1;
@@ -1384,6 +1392,48 @@ button.cell-copy svg {
 .entry-secret {
   flex: 0 0 175px;
   min-width: 0;
+}
+
+/* Fixed, like the number's slot, because rows have to agree: a three-digit
+   CVV next to a four-digit one would otherwise put the buttons of the two
+   rows in different places. The width fits the longest CVV the form accepts.
+   The value sits at the right edge, hard against its buttons, so the spare
+   room falls between the label and the value instead of between the value
+   and the buttons. */
+.entry-secret.narrow {
+  flex: 0 0 72px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/* Names the field without competing with its value. */
+.secret-label {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--text-faint);
+  vertical-align: 1px;
+}
+
+/* A secret and the buttons acting on it move as one, so copy sits beside
+   the value exactly as it does in a text cell. The value stays legible;
+   only the buttons fade until the row is under the cursor. */
+.secret-group {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  flex: 0 0 auto;
+}
+
+.secret-group .icon {
+  opacity: 0.35;
+  transition: opacity 0.15s;
+}
+
+.entry:hover .secret-group .icon {
+  opacity: 1;
 }
 
 .entry-secret code {

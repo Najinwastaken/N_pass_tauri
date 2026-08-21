@@ -202,6 +202,9 @@ pub struct CardMeta {
     pub cardholder: String,
     pub last4: String,
     pub expiry: String,
+    /// How many characters the CVV has — enough to mask it at its true
+    /// width, so revealing it moves nothing. Never the CVV itself.
+    pub cvv_len: usize,
     pub notes: String,
 }
 
@@ -215,6 +218,7 @@ impl From<&CardEntry> for CardMeta {
             cardholder: e.cardholder.clone(),
             last4: e.number[digits.saturating_sub(4)..].to_string(),
             expiry: e.expiry.clone(),
+            cvv_len: e.cvv.chars().count(),
             notes: e.notes.clone(),
         }
     }

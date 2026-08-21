@@ -97,11 +97,17 @@ extension, no autofill — see [Non-goals](#non-goals)). The everyday loop
 is copy-and-paste, and it takes about three seconds:
 
 1. Find the entry — start typing in the search box or press **Ctrl+F**.
-2. Click the **copy** icon (⧉) on the right side of the row. Nothing is
-   shown on screen; the password goes straight to the clipboard.
+2. Click the **copy** icon (⧉) — the first of the buttons on the right of
+   the row, right next to the dots. The password is never shown on screen;
+   it goes straight to the clipboard. The button answers with a green tick
+   so you know it took.
 3. Switch to the website and paste with **Ctrl+V**.
 4. Forget about it — the clipboard clears itself 30 seconds later, so the
    password does not linger there for the rest of the day.
+
+In the card list the number and the CVV are separate columns, each with
+its own copy button and its own eye — reading a CVV out loud is no reason
+to put the whole card number on screen.
 
 Need to *see* a password instead of copying it (to type it on a phone,
 for example)? Click the **eye** icon — the value appears in the row and

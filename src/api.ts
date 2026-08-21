@@ -29,6 +29,8 @@ export interface CardMeta {
   cardholder: string;
   last4: string;
   expiry: string;
+  /** Length of the CVV, so it can be masked at its real width. */
+  cvv_len: number;
   notes: string;
 }
 

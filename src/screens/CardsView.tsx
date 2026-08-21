@@ -4,6 +4,7 @@ import { digitsOnly, expiryWholeValue, smartCopy, useClearCellSelection } from "
 import { useDragReorder } from "../lib/useDragReorder";
 import { Select } from "../lib/Select";
 import { Cell } from "../lib/Cell";
+import { CopyButton } from "../lib/CopyButton";
 import { SearchBox, useSearch } from "../lib/useSearch";
 import { t } from "../lib/i18n";
 import { useListScroll } from "../lib/useListScroll";
@@ -14,7 +15,6 @@ const DRAFT_KEY = "cards";
 type Draft = { initial: CardMeta | null; form: CardInput };
 import {
   IconCard,
-  IconCopy,
   IconEye,
   IconEyeOff,
   IconGrip,
@@ -61,6 +61,9 @@ export function CardsView() {
   // Coming back from the form should land where the user was.
   const rememberScroll = useListScroll(editing !== null, entries);
   const [revealed, setRevealed] = useState<Record<string, string>>({});
+  // The CVV reveals on its own: it is the field people read out loud, and
+  // wanting to see it says nothing about wanting to see the number.
+  const [cvvShown, setCvvShown] = useState<Record<string, string>>({});
   const { dragProps, handleProps } = useDragReorder("cards", entries, setEntries);
   useClearCellSelection();
   const { query, setQuery, filtered, searching } = useSearch(entries, (e) => [
@@ -72,6 +75,7 @@ export function CardsView() {
   async function refresh() {
     setEntries(await api.listCards());
     setRevealed({});
+    setCvvShown({});
   }
 
   useEffect(() => {
@@ -84,6 +88,15 @@ export function CardsView() {
     } else {
       const number = await api.revealCardField(id, "number");
       setRevealed((r) => ({ ...r, [id]: formatCardNumber(number) }));
+    }
+  }
+
+  async function toggleRevealCvv(id: string) {
+    if (cvvShown[id] !== undefined) {
+      setCvvShown(({ [id]: _, ...rest }) => rest);
+    } else {
+      const cvv = await api.revealCardField(id, "cvv");
+      setCvvShown((r) => ({ ...r, [id]: cvv }));
     }
   }
 
@@ -148,10 +161,17 @@ export function CardsView() {
               <Cell value={e.cardholder} kind="holder" />
               {/* Cursor-position smart copy: before the slash = MM, after = YY */}
               <Cell value={e.expiry} kind="expiry" wholeValue={expiryWholeValue} />
-              <div className="entry-secret">
-                <code>{revealed[e.id] ?? `•••• ${e.last4}`}</code>
-              </div>
-              <div className="entry-actions">
+              {/* Each secret carries its own copy and eye, the way every text
+                  cell carries its copy button — the CVV is a field of its own
+                  here, not an extra button hidden among the row's actions. */}
+              <div className="secret-group">
+                <div className="entry-secret">
+                  <code>{revealed[e.id] ?? `•••• ${e.last4}`}</code>
+                </div>
+                <CopyButton
+                  title={t("copyNumber")}
+                  onCopy={() => api.copySecret("card_number", e.id)}
+                />
                 <button
                   className="icon"
                   title={revealed[e.id] !== undefined ? t("hideNumber") : t("showNumber")}
@@ -159,20 +179,27 @@ export function CardsView() {
                 >
                   {revealed[e.id] !== undefined ? <IconEyeOff size={15} /> : <IconEye size={15} />}
                 </button>
-                <button
-                  className="icon"
-                  title={t("copyNumber")}
-                  onClick={() => void api.copySecret("card_number", e.id)}
-                >
-                  <IconCopy size={15} />
-                </button>
-                <button
-                  className="icon"
+              </div>
+              <div className="secret-group">
+                <div className="entry-secret narrow">
+                  {/* Three dots on their own say "a secret", not "which
+                      secret" — the column has no heading to explain it. */}
+                  <span className="secret-label">CVV</span>
+                  <code>{cvvShown[e.id] ?? "•".repeat(e.cvv_len || 3)}</code>
+                </div>
+                <CopyButton
                   title={t("copyCvv")}
-                  onClick={() => void api.copySecret("card_cvv", e.id)}
+                  onCopy={() => api.copySecret("card_cvv", e.id)}
+                />
+                <button
+                  className="icon"
+                  title={cvvShown[e.id] !== undefined ? t("hideCvv") : t("showCvv")}
+                  onClick={() => void toggleRevealCvv(e.id)}
                 >
-                  CVV
+                  {cvvShown[e.id] !== undefined ? <IconEyeOff size={15} /> : <IconEye size={15} />}
                 </button>
+              </div>
+              <div className="entry-actions">
                 <button className="icon" title={t("edit")} onClick={() => { rememberScroll(); setEditing(e); }}>
                   <IconPencil size={15} />
                 </button>

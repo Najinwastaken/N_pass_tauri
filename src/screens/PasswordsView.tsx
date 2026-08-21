@@ -6,7 +6,6 @@ import { useContextMenu } from "../lib/ContextMenu";
 import { StrengthMeter } from "../lib/strength";
 import {
   IconChevronDown,
-  IconCopy,
   IconDots,
   IconCollapseAll,
   IconExternal,
@@ -24,6 +23,7 @@ import {
 } from "../lib/icons";
 import { loadGenOptions, loadNewEntryReveal, saveNewEntryReveal } from "../lib/genPrefs";
 import { Cell } from "../lib/Cell";
+import { CopyButton } from "../lib/CopyButton";
 import { ComboBox } from "../lib/ComboBox";
 import { Select } from "../lib/Select";
 import { shortUrl } from "../lib/url";
@@ -309,15 +309,13 @@ export function PasswordsView({ profile }: { profile: string }) {
           <code>{revealed[entry.id] ?? "••••••••"}</code>
         </div>
         <div className="entry-actions">
-          {/* Kept in place when there is no URL so every row's action
-              block is the same width and the columns stay aligned. */}
-          <button
-            className={`icon ${entry.url ? "" : "invisible"}`}
-            title={t("openUrl")}
-            onClick={() => entry.url && void api.openUrl(entry.url)}
-          >
-            <IconExternal size={15} />
-          </button>
+          {/* Copy leads, next to the value it copies — the same place every
+              cell in the row puts its own copy button. Then the eye, then the
+              link, then the two that act on the record itself. */}
+          <CopyButton
+            title={t("copyPassword")}
+            onCopy={() => api.copySecret("password", entry.id)}
+          />
           <button
             className="icon"
             title={revealed[entry.id] !== undefined ? t("hide") : t("show")}
@@ -325,12 +323,14 @@ export function PasswordsView({ profile }: { profile: string }) {
           >
             {revealed[entry.id] !== undefined ? <IconEyeOff size={15} /> : <IconEye size={15} />}
           </button>
+          {/* Kept in place when there is no URL so every row's action block
+              is the same width and the columns stay aligned. */}
           <button
-            className="icon"
-            title={t("copyPassword")}
-            onClick={() => void api.copySecret("password", entry.id)}
+            className={`icon ${entry.url ? "" : "invisible"}`}
+            title={t("openUrl")}
+            onClick={() => entry.url && void api.openUrl(entry.url)}
           >
-            <IconCopy size={15} />
+            <IconExternal size={15} />
           </button>
           <button
             className="icon"
